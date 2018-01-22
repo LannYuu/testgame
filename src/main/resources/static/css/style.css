@@ -1,15 +1,29 @@
 @font-face {
     font-family: 'mononokiregular';
-    src: url('/fonts/mononoki-Regular.woff2') format('woff2'),
-    url('/fonts/mononoki-Regular.woff') format('woff');
+    src: url("/static/fonts/mononoki-Regular.woff2") format('woff2'),
+    url('/static/fonts/mononoki-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 
 }
-body{
-    background:#008080;
+.my-bg-default{
+    background:#009688;
+    color:#ffffff;
+}
+.my-bg-grey{
+    background:#393D49;
+    color:#ffffff;
+}
+.my-bg-warning{
+    background:#FF5722;
+    color:#ffffff;
 }
 *{
     font-family: mononokiregular,"Microsoft YaHei UI",serif;
-    color:#ffffff
+}
+.my-a{
+    color:#fff;
+}
+.my-a:visited{
+    color:#ccc;
 }

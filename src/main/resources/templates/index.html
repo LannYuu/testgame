@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8"/>
     <title>index</title>
-    <link rel="Stylesheet" type="text/css" href="/css/style.css"/>
+    <link rel="stylesheet" href="/static/plugin/layui/css/layui.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
     <style>
         body{
             padding:40px;
         }
     </style>
 </head>
-<body>
- <img src="/img/favicon.png"/><h1 th:text="${hello}"></h1>
+<body class="layui-bg-green">
+<img src="/static/img/favicon.png"/><br/><br/>
+<p style="font-size:40px" th:text="${hello}"></p>
+<script src="/static/plugin/layui/layui.js"></script>
 </body>
 </html>

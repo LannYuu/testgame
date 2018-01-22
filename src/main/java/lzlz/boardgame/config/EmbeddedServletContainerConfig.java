@@ -1,4 +1,4 @@
-package lzlz.config;
+package lzlz.boardgame.config;
 
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.web.servlet.ErrorPage;

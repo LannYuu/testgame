@@ -1,8 +1,8 @@
-package lzlz.controller;
+package lzlz.boardgame.controller;
 
 import com.google.common.collect.Maps;
-import lzlz.dao.entity.TestDO;
-import lzlz.dao.mapper.TestMapper;
+import lzlz.boardgame.dao.entity.TestDO;
+import lzlz.boardgame.dao.mapper.TestMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;

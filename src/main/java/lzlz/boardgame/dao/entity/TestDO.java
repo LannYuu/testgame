@@ -1,4 +1,4 @@
-package lzlz.dao.entity;
+package lzlz.boardgame.dao.entity;
 
 import lombok.Data;
 

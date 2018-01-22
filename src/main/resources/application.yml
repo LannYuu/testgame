@@ -6,7 +6,7 @@ server:
 
 ### mybatis配置
 mybatis:
-    type-aliases-package: com.fzk.money.dao.entity
+    type-aliases-package: lzlz.boardgame.dao.entity
     mapper-locations: classpath:mapper/*.xml
 
 mapper:
@@ -36,7 +36,7 @@ spring:
         mode: HTML5
     ##redis
     redis:
-        database: 0
+        database: 1
         host: 111.231.14.53
         port: 6379
         password: QWERDF595182653QWERDF595182653

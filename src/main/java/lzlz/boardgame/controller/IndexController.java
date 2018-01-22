@@ -1,4 +1,4 @@
-package lzlz.controller;
+package lzlz.boardgame.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +11,6 @@ public class IndexController{
     public ModelAndView index() {
 
         return new ModelAndView("index")
-                .addObject("hello", "hello!");
+                .addObject("hello", "hello! hello!");
     }
 }
