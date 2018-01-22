@@ -1,0 +1,15 @@
+@font-face {
+    font-family: 'mononokiregular';
+    src: url('/fonts/mononoki-Regular.woff2') format('woff2'),
+    url('/fonts/mononoki-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+body{
+    background:#008080;
+}
+*{
+    font-family: mononokiregular,"Microsoft YaHei UI",serif;
+    color:#ffffff
+}

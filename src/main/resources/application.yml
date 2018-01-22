@@ -1,0 +1,55 @@
+### 服务器配置
+server:
+    port: 4397
+    tomcat.uri-encoding: UTF-8
+###  context-path: /vcoinb
+
+### mybatis配置
+mybatis:
+    type-aliases-package: com.fzk.money.dao.entity
+    mapper-locations: classpath:mapper/*.xml
+
+mapper:
+    not-empty: false
+    identity: MYSQL
+
+pagehelper:
+    helperDialect: mysql
+    reasonable: true
+    supportMethodsArguments: true
+    params: count=countSql
+
+### spring配置
+spring:
+    ###禁用默认favicon
+    mvc.favicon.enabled: false
+    http:
+        encoding.charset: UTF-8
+        encoding.force: true
+    ##模板引擎
+    thymeleaf:
+        cache: false #开发时禁止缓存
+        prefix: classpath:/templates/
+        suffix: .html
+        encoding: UTF-8
+        content-type: text/html
+        mode: HTML5
+    ##redis
+    redis:
+        database: 0
+        host: 111.231.14.53
+        port: 6379
+        password: QWERDF595182653QWERDF595182653
+    ##数据库连接
+    datasource:
+        url: jdbc:mysql://111.231.14.53:3306/test?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;allowMultiQueries=true
+        username: vcoin
+        password: QWERDF595182653
+        driver-class-name: com.mysql.jdbc.Driver
+###日志
+logging:
+    level:
+        root: debug
+        o.s.c: info
+        o.s.core: info
+        org.apache.http: info
