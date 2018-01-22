@@ -1,6 +1,6 @@
 ### 服务器配置
 server:
-    port: 4397
+    port: 23334
     tomcat.uri-encoding: UTF-8
 ###  context-path: /vcoinb
 

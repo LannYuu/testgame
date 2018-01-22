@@ -11,6 +11,6 @@ public class IndexController{
     public ModelAndView index() {
 
         return new ModelAndView("index")
-                .addObject("hello", "hello world!");
+                .addObject("hello", "hello!");
     }
 }
