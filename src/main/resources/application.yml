@@ -49,7 +49,5 @@ spring:
 ###日志
 logging:
     level:
-        root: debug
-        o.s.c: info
-        o.s.core: info
-        org.apache.http: info
+        root: info
+        lzlz.boardgame.websocket: debug

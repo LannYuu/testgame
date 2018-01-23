@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.ResultSetMetaData;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Optional;
 @Controller
 @RequestMapping("test")
 public class TestController {
+    private static String socketBasePath;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -89,5 +91,16 @@ public class TestController {
                 .map(TestDO::toString)
                 .reduce((prev,add)->prev+System.lineSeparator()+add).orElse("");
         return new ModelAndView("test/common-test").addObject("value", result);
+    }
+
+    @RequestMapping("socket")
+    public ModelAndView testSocket(HttpServletRequest request){
+        if (socketBasePath == null) {
+            String path = request.getContextPath();
+            String serverName = request.getServerName();
+            int port = request.getServerPort();
+            socketBasePath = serverName + ":" + port + path;
+        }
+        return new ModelAndView("test/chat").addObject("socketBasePath", socketBasePath);
     }
 }

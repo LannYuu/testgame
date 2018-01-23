@@ -1,15 +1,17 @@
 package lzlz.boardgame.interceptor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@Slf4j
 public class MyInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o){
-        System.out.println("URL: "+httpServletRequest.getRequestURL());
+        log.info("URL: "+httpServletRequest.getRequestURL());
         return true;
     }
 
