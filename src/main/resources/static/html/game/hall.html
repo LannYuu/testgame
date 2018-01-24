@@ -7,13 +7,10 @@
     <link rel="stylesheet" href="/static/plugin/layui/css/layui.css">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
     <style>
-        .room-wrap{
+        #room-wrap{
             background:rgba(255,255,255,.1);
             margin:0 10px 0 0;
-            border-radius: 3px;
-            padding:0 10px;
-            overflow-y:auto;
-            overflow-x:hidden;
+            padding:10px;
         }
         .room{
             height:40px;
@@ -22,6 +19,7 @@
             white-space : nowrap;
             overflow:hidden;
             text-overflow:ellipsis;
+            border-radius: 3px;
             /*border-bottom: 1px #009688 solid;*/
         }
         .room:hover{
@@ -32,6 +30,15 @@
             font-size:smaller;
             color:#bbb
         }
+        #chat p{
+            margin-bottom: 5px;
+        }
+        /*#create-panel{*/
+            /*margin:0 10px 10px 0;*/
+            /*padding:10px;*/
+            /*height:100px;*/
+            /*background:rgba(255,255,255,.1);*/
+        /*}*/
     </style>
 </head>
 <body class="layui-bg-cyan">
@@ -42,10 +49,7 @@
 <div class="layui-container" style="margin-top:10px;">
     <div class="layui-row">
         <div class="layui-col-xs6 layui-col-sm8 layui-col-lg9">
-            <div class="layui-bg-green" style="margin-right:10px;">
-                aa
-            </div>
-            <div class="room-wrap my-full-height" >
+            <div id="room-wrap" >
 
                 <div class="room">
                     谁敢与我一战！
@@ -83,52 +87,23 @@
                     谁敢与我一战！
                     <span class="creator">创建者 哈哈哈哈 </span>
                 </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
             </div>
         </div>
-        <div class="layui-col-xs6 layui-col-sm4 layui-col-lg3 layui-bg-green my-full-height"
+        <div class="layui-col-xs6 layui-col-sm4 layui-col-lg3 layui-bg-green" id ="chat-wrap"
              style="position: relative;">
             <div id="chat" style="padding:5px;">
                 聊天窗口
+                <p><span class="layui-bg-black">15:32:25 [管理员]lzlz:</span> layui 之所以赢得如此多人的青睐，更多是在于它“前后台系统通吃”的能力。既可编织出绚丽的前台页面，又可满足繁杂的后台功能需求。
+                    layui 后台布局， 致力于让每一位开发者都能轻松搭建自己的后台模板。</p>
+                <p><span class="layui-bg-gray">15:32:25 按时打发:</span> 快趁我现在没有单排赢得多的时候，抓紧我大腿，带你混上黄金</p>
+                <p><span class="layui-bg-red">15:32:25 [系统信息]:</span>哇哈哈哈，在这咋的萨达是，撒打算</p>
+            </div>
+            <div style="width:95%;position: absolute;left:10px;bottom:45px;">
+                <div class="layui-input-inline" style="width:70%">
+                    <input type="text" name="title" required placeholder="请输入标题"
+                           autocomplete="off" class="layui-input">
+                </div>
+                <button class="layui-btn layui-btn-primary" style="width:25%">发送</button>
             </div>
             <button class="layui-btn layui-btn-warm" style="width:100%;position: absolute;left:0;bottom:0;">Create</button>
         </div>
@@ -137,7 +112,13 @@
 <script src="/static/plugin/layui/layui.js"></script>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
 <script>
-    $(".my-full-height").height(window.innerHeight-100);
+    //调整布局用js
+    var height = window.innerHeight;
+    $("#chat-wrap").height(height-100);
+    $("#room-wrap").css('min-height',(height-120)+'px');
+</script>
+<script>
+    //
 </script>
 </body>
 </html>
