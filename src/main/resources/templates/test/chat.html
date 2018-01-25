@@ -4,9 +4,10 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
     <title>sokect demo</title>
+    <link rel="stylesheet" type="text/css" href="/static/plugin/layui/css/layui.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
 </head>
-<body class="my-bg-default">
+<body class="my-bg-default layui-container">
 Welcome<br/>
 <input id="text" type="text"  title="message"/>
 <button onclick="send()">Send</button>
@@ -18,7 +19,7 @@ Welcome<br/>
 <!--<script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>-->
 <script type="text/javascript" th:inline="javascript">
     var websocket = null;
-    var target ='ws://'+[[${socketBasePath}]]+'/socket/chattest/abcd';
+    var target ='ws://'+[[${socketBasePath}]]+'/socket/hallchat/lzlz';
     function initWebSocket(url){
         if('WebSocket' in window){
             if(websocket){

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/plugin/layui/css/layui.css">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
     <style>
+
         #room-wrap{
             background:rgba(255,255,255,.1);
             margin:0 10px 0 0;
@@ -30,19 +31,21 @@
             font-size:smaller;
             color:#bbb
         }
-        #chat p{
-            margin-bottom: 5px;
+        #chat-content{
+            overflow-y:hidden;
         }
-        /*#create-panel{*/
-            /*margin:0 10px 10px 0;*/
-            /*padding:10px;*/
-            /*height:100px;*/
-            /*background:rgba(255,255,255,.1);*/
-        /*}*/
+        #chat-content p{
+            margin:0 5px 5px;
+            font-size:13px;
+        }
+        #chat-content p .chat-head{
+            margin-left:-5px;
+        }
+
     </style>
 </head>
-<body class="layui-bg-cyan">
-<ul class="layui-nav layui-bg-green">
+<body class="layui-bg-cyan my-body-fix-top my-scroll">
+<ul class="layui-nav layui-bg-green my-nav-fix-top">
     <li class="layui-nav-item"><img height="40" src="/static/img/favicon.png">&emsp;</li>
     <li class="layui-nav-item layui-this"><a href="">大厅</a></li>
 </ul>
@@ -91,21 +94,24 @@
         </div>
         <div class="layui-col-xs6 layui-col-sm4 layui-col-lg3 layui-bg-green" id ="chat-wrap"
              style="position: relative;">
-            <div id="chat" style="padding:5px;">
-                聊天窗口
-                <p><span class="layui-bg-black">15:32:25 [管理员]lzlz:</span> layui 之所以赢得如此多人的青睐，更多是在于它“前后台系统通吃”的能力。既可编织出绚丽的前台页面，又可满足繁杂的后台功能需求。
-                    layui 后台布局， 致力于让每一位开发者都能轻松搭建自己的后台模板。</p>
-                <p><span class="layui-bg-gray">15:32:25 按时打发:</span> 快趁我现在没有单排赢得多的时候，抓紧我大腿，带你混上黄金</p>
-                <p><span class="layui-bg-red">15:32:25 [系统信息]:</span>哇哈哈哈，在这咋的萨达是，撒打算</p>
-            </div>
-            <div style="width:95%;position: absolute;left:10px;bottom:45px;">
-                <div class="layui-input-inline" style="width:70%">
-                    <input type="text" name="title" required placeholder="请输入标题"
-                           autocomplete="off" class="layui-input">
+            <div id="chat" style="padding:15px 5px 0 10px;">
+                <div class="" id="chat-content">
+                    <p>
+                        <span class="layui-bg-gray chat-head">15:32:25 [系统信息]:</span>
+                        哇哈哈哈，在这咋的萨达是，撒打算</p>
+                    <p><span class="layui-bg-black chat-head">22:32:25 [管理员]lzlz:</span> layui 之所以赢得如此多人的青睐，更多是在于它“前后台系统通吃”的能力。既可编织出绚丽的前台页面，又可满足繁杂的后台功能需求。
+                        layui 后台布局， 致力于让每一位开发者都能轻松搭建自己的后台模板。</p>
+                    <p><span class="my-bg-green chat-head">15:32:25 按时打发:</span> 快趁我现在没有单排赢得多的时候，抓紧我大腿，带你混上黄金</p>
                 </div>
-                <button class="layui-btn layui-btn-primary" style="width:25%">发送</button>
             </div>
-            <button class="layui-btn layui-btn-warm" style="width:100%;position: absolute;left:0;bottom:0;">Create</button>
+            <div style="width:95%;position: absolute;left:3%;bottom:45px;">
+                <div class="layui-input-inline" style="width:70%;">
+                    <input id="input-message" type="text" name="title" required placeholder="发送消息"
+                           autocomplete="off" class="layui-input my-input-xs"/>
+                </div>
+                <button class="layui-btn layui-btn-primary layui-btn-xs" id="btn-send" style="width:25%">发送</button>
+            </div>
+            <button class="layui-btn layui-btn-danger" style="width:100%;position: absolute;left:0;bottom:0;">创建房间</button>
         </div>
     </div>
 </div>
@@ -115,10 +121,68 @@
     //调整布局用js
     var height = window.innerHeight;
     $("#chat-wrap").height(height-100);
+    $("#chat-content")
+        .height(height-200)
+        .bind('DOMNodeInserted', function() {
+            this.scrollTop = this.scrollHeight;
+            var $this = $(this);
+            if(1.5*$this.height()<this.scrollHeight){
+                $this.find("p").eq(0).remove();
+            }
+        });
     $("#room-wrap").css('min-height',(height-120)+'px');
 </script>
 <script>
-    //
+    //聊天服务器
+    var websocket;
+    var target;
+    $.post("/api/game/hallchat",function(data){
+        var length = data.length;
+        target = data.substring(1,length-1);
+        initWebSocket(target);
+    });
+
+    function initWebSocket(url){
+        if('WebSocket' in window){
+            if(websocket){
+                websocket.close();
+            }
+            websocket = new WebSocket(url);
+            //连接发生错误的回调方法
+            websocket.onerror = function(event){
+                setMessage(event.data);
+            };
+
+            //连接成功建立的回调方法
+            websocket.onopen = function(event){
+                setMessage("open "+new Date(event.timeStamp));
+            };
+
+            //接收到消息的回调方法
+            websocket.onmessage = function(event){
+                setMessage(event.data);
+            };
+
+            //连接关闭的回调方法
+            websocket.onclose = function(){
+                setMessageInnerHTML("close");
+            }
+        }
+        else{
+            alert('浏览器不支持Websocket,请升级！')
+        }
+    }
+    $('#btn-send').click(function(){
+        websocket.send($("#input-message").val());
+    });
+    function setMessage(message) {
+        $('#chat-content').append('<p>'+message+'</p>');
+    }
+    window.onbeforeunload = function(){
+        if(websocket){
+            websocket.close();
+        }
+    };
 </script>
 </body>
 </html>

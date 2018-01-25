@@ -1,4 +1,4 @@
-package lzlz.boardgame.socket;
+package lzlz.boardgame.socket.endpoint;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -45,6 +45,7 @@ public class TestSocketEndPoint {
 //        log.info(session.getId());
         //群发消息
         for (TestSocketEndPoint item : webSocketSet) {
+            if(item.session.equals(session))
             try {
                 if (item.session.isOpen()){
                     item.sendMessage(message);
