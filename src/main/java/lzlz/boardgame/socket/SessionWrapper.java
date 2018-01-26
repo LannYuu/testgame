@@ -1,15 +1,17 @@
 package lzlz.boardgame.socket;
 
+import lzlz.boardgame.entity.User;
+
 import javax.websocket.Session;
 import java.util.Date;
 
 public class SessionWrapper {
     private final Session session;
-    private final String name;
+    private final User user;
     private Date lastActiveTime;
-    public SessionWrapper(Session session, String name){
+    public SessionWrapper(Session session, User user){
         this.session = session;
-        this.name = name;
+        this.user = user;
         lastActiveTime = new Date();
     }
 
@@ -28,8 +30,8 @@ public class SessionWrapper {
         return session;
     }
 
-    public String getName() {
-        return name;
+    public User getUser() {
+        return user;
     }
 
     //session相同就是同一个

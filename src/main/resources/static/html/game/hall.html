@@ -7,10 +7,8 @@
     <link rel="stylesheet" href="/static/plugin/layui/css/layui.css">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
     <style>
-
         #room-wrap{
             background:rgba(255,255,255,.1);
-            margin:0 10px 0 0;
             padding:10px;
         }
         .room{
@@ -41,7 +39,11 @@
         #chat-content p .chat-head{
             margin-left:-5px;
         }
-
+        #chat-content pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size:13px;
+        }
     </style>
 </head>
 <body class="layui-bg-cyan my-body-fix-top my-scroll">
@@ -51,43 +53,16 @@
 </ul>
 <div class="layui-container" style="margin-top:10px;">
     <div class="layui-row">
-        <div class="layui-col-xs6 layui-col-sm8 layui-col-lg9">
+        <div class="layui-col-xs6 layui-col-sm8 layui-col-lg9" style="padding-right:10px">
+            <div></div>
             <div id="room-wrap" >
 
                 <div class="room">
-                    谁敢与我一战！
+                    呵呵哈哈哈！
                     <span class="creator">创建者 哈哈哈哈 </span>
                 </div>
                 <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    谁敢与我一战！
+                    hahahahaha！
                     <span class="creator">创建者 哈哈哈哈 </span>
                 </div>
             </div>
@@ -97,21 +72,21 @@
             <div id="chat" style="padding:15px 5px 0 10px;">
                 <div class="" id="chat-content">
                     <p>
-                        <span class="layui-bg-gray chat-head">15:32:25 [系统信息]:</span>
-                        哇哈哈哈，在这咋的萨达是，撒打算</p>
-                    <p><span class="layui-bg-black chat-head">22:32:25 [管理员]lzlz:</span> layui 之所以赢得如此多人的青睐，更多是在于它“前后台系统通吃”的能力。既可编织出绚丽的前台页面，又可满足繁杂的后台功能需求。
-                        layui 后台布局， 致力于让每一位开发者都能轻松搭建自己的后台模板。</p>
-                    <p><span class="my-bg-green chat-head">15:32:25 按时打发:</span> 快趁我现在没有单排赢得多的时候，抓紧我大腿，带你混上黄金</p>
+                        <span class="layui-bg-gray chat-head">[系统信息]:</span>
+                        获取聊天服务器...
+                    </p>
                 </div>
             </div>
             <div style="width:95%;position: absolute;left:3%;bottom:45px;">
                 <div class="layui-input-inline" style="width:70%;">
-                    <input id="input-message" type="text" name="title" required placeholder="发送消息"
-                           autocomplete="off" class="layui-input my-input-xs"/>
+                    <input id="input-message" type="text" title="发送信息"
+                           class="layui-input my-input-xs"/>
                 </div>
-                <button class="layui-btn layui-btn-primary layui-btn-xs" id="btn-send" style="width:25%">发送</button>
+                <button class="layui-btn layui-btn-primary layui-btn-xs"
+                        id="btn-send" style="width:25%">发送</button>
             </div>
-            <button class="layui-btn layui-btn-danger" style="width:100%;position: absolute;left:0;bottom:0;">创建房间</button>
+            <button class="layui-btn layui-btn-danger"
+                    style="width:100%;position: absolute;left:0;bottom:0;">创建房间</button>
         </div>
     </div>
 </div>
@@ -142,20 +117,21 @@
         initWebSocket(target);
     });
 
-    function initWebSocket(url){
+    function initWebSocket(){
         if('WebSocket' in window){
             if(websocket){
                 websocket.close();
             }
-            websocket = new WebSocket(url);
+            // setSystemInfo("正在连接聊天服务器...");
+            websocket = new WebSocket(target);
             //连接发生错误的回调方法
-            websocket.onerror = function(event){
-                setMessage(event.data);
+            websocket.onerror = function(){
+                setErrorInfo("");
             };
 
             //连接成功建立的回调方法
             websocket.onopen = function(event){
-                setMessage("open "+new Date(event.timeStamp));
+
             };
 
             //接收到消息的回调方法
@@ -165,16 +141,34 @@
 
             //连接关闭的回调方法
             websocket.onclose = function(){
-                setMessageInnerHTML("close");
+                setSystemInfo("与服务器断开连接");
+                setTimeout(function(){
+                    setSystemInfo("正在尝试重新连接..");
+                    initWebSocket(target);
+                },1000);
             }
         }
         else{
-            alert('浏览器不支持Websocket,请升级！')
+            setErrorInfo("浏览器不支持Websocket,请升级！");
+            alert('浏览器不支持Websocket,请升级！');
         }
     }
-    $('#btn-send').click(function(){
-        websocket.send($("#input-message").val());
+    var $message = $("#input-message").keypress(function(e) {
+        // 回车键事件
+        if(e.which === 13) {
+            $('#btn-send').click();
+        }
     });
+    $('#btn-send').click(function(){
+        websocket.send($message.val());
+        $message.val(null);
+    });
+    function setSystemInfo(message){
+        setMessage("<span class=\"layui-bg-gray chat-head\">[系统信息]:</span> " + message);
+    }
+    function setErrorInfo(message){
+        setMessage("<span class=\"my-bg-error chat-head\">[错误]: " + message+"</span>");
+    }
     function setMessage(message) {
         $('#chat-content').append('<p>'+message+'</p>');
     }

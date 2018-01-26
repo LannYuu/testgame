@@ -19,7 +19,7 @@ Welcome<br/>
 <!--<script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>-->
 <script type="text/javascript" th:inline="javascript">
     var websocket = null;
-    var target ='ws://'+[[${socketBasePath}]]+'/socket/hallchat/lzlz';
+    var target ='ws://'+[[${socketBasePath}]]+'/socket/roomchat/lzlz';
     function initWebSocket(url){
         if('WebSocket' in window){
             if(websocket){

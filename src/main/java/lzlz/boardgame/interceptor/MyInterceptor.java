@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 public class MyInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o){
-        log.info("URL: "+httpServletRequest.getRequestURL());
+        log.debug("URL: "+httpServletRequest.getRequestURL());
         return true;
     }
 

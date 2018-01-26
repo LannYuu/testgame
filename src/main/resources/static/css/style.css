@@ -23,6 +23,10 @@
     background:#FF5722;
     color:#ffffff;
 }
+.my-bg-error{
+    background:#d9534f;
+    color:#ffffff;
+}
 *{
     font-family: mononokiregular,"Microsoft YaHei UI",serif!important;
 }
