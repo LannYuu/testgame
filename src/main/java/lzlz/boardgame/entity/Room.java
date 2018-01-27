@@ -3,6 +3,8 @@ package lzlz.boardgame.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lzlz.boardgame.constant.RoomState;
+import lzlz.boardgame.socket.WsSessionWrapper;
 
 import java.util.List;
 
@@ -10,7 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Room {
-    String sessionId;
+    String id;
     String roomMessage;
-    List<UserSession> userList;
+    RoomState state;
+    List<WsSessionWrapper> sessionList;
 }

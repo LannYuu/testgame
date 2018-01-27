@@ -5,11 +5,16 @@ import lzlz.boardgame.entity.User;
 import javax.websocket.Session;
 import java.util.Date;
 
-public class SessionWrapper {
+/**
+ * websocket session 包装类
+ * createBy lzlz at 2018/1/27 9:29
+ * @author : lzlz
+ */
+public class WsSessionWrapper {
     private final Session session;
     private final User user;
     private Date lastActiveTime;
-    public SessionWrapper(Session session, User user){
+    public WsSessionWrapper(Session session, User user){
         this.session = session;
         this.user = user;
         lastActiveTime = new Date();
@@ -37,6 +42,6 @@ public class SessionWrapper {
     //session相同就是同一个
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof SessionWrapper && ((SessionWrapper) obj).session.equals(this.session);
+        return obj instanceof WsSessionWrapper && ((WsSessionWrapper) obj).session.equals(this.session);
     }
 }

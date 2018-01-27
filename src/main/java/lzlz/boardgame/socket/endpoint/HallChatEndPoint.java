@@ -3,7 +3,7 @@ package lzlz.boardgame.socket.endpoint;
 import lzlz.boardgame.constant.UserRole;
 import lzlz.boardgame.entity.User;
 import lzlz.boardgame.socket.AbstractChatEndPoint;
-import lzlz.boardgame.socket.SessionWrapper;
+import lzlz.boardgame.socket.WsSessionWrapper;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.OnOpen;
@@ -17,7 +17,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @ServerEndpoint(value = "/socket/hallchat/{name}")
 @Component
 public class HallChatEndPoint extends AbstractChatEndPoint {
-    private static CopyOnWriteArraySet<SessionWrapper> sessionSet = new CopyOnWriteArraySet<>();
+    private static CopyOnWriteArraySet<WsSessionWrapper> sessionSet = new CopyOnWriteArraySet<>();
 
     @Override @OnOpen
     public void onOpen(Session session,@PathParam("name") String name) {
@@ -33,7 +33,7 @@ public class HallChatEndPoint extends AbstractChatEndPoint {
     @Override
     public void broadcast(String message, Session thisSession){
         String text = getText(message);
-        for (SessionWrapper wrapper : sessionSet) {
+        for (WsSessionWrapper wrapper : sessionSet) {
             try {
                 Session session = wrapper.getSession();
                 if(session.equals(thisSession)){
@@ -50,13 +50,13 @@ public class HallChatEndPoint extends AbstractChatEndPoint {
 
     @Override
     public void addSession(Session session, String name) {
-        SessionWrapper wrapper = new SessionWrapper(session,new User(0, UserRole.Normal,""));
+        WsSessionWrapper wrapper = new WsSessionWrapper(session,new User(0, UserRole.Normal,""));
         sessionSet.add(wrapper);
     }
 
     @Override
     public void removeSession(Session session) {
-        sessionSet.remove(new SessionWrapper(session,null));//SessionWrapper的equals方法重写为比较session
+        sessionSet.remove(new WsSessionWrapper(session,null));//SessionWrapper的equals方法重写为比较session
     }
 
 }
