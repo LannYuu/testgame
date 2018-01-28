@@ -7,25 +7,25 @@
 
 }
 .my-bg-default{
-    background:#009688;
-    color:#ffffff;
+    background:#009688!important;
+    color:#ffffff!important;
 
 }
 .my-bg-green{
-    background:#5FB878;
-    color:#ffffff;
+    background:#5FB878!important;
+    color:#ffffff!important;
 }
 .my-bg-grey{
-    background:#393D49;
-    color:#ffffff;
+    background:#393D49!important;
+    color:#ffffff!important;
 }
 .my-bg-warning{
-    background:#FF5722;
-    color:#ffffff;
+    background:#FF5722!important;
+    color:#ffffff!important;
 }
 .my-bg-error{
-    background:#d9534f;
-    color:#ffffff;
+    background:#d9534f!important;
+    color:#ffffff!important;
 }
 *{
     font-family: mononokiregular,"Microsoft YaHei UI",serif!important;

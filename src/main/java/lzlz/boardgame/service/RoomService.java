@@ -18,10 +18,12 @@ public class RoomService {
      * 从 httprequest 中创建房间
      * @return 房间的UUID
      */
-    public String createRoom(){
+    public String createRoom(String roomName,String roomPassword){
         String roomId = UUID.randomUUID().toString().replaceAll("-", "");
         Room room = new Room();
         room.setId(roomId);
+        room.setMessage(roomName);
+        room.setPassword(roomPassword);
         room.setState(RoomState.Initial);
         room.setSessionList(new ArrayList<>());
         synchronized (roomMap){

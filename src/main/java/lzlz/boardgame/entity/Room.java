@@ -13,7 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class Room {
     String id;
-    String roomMessage;
+    String message;
+    String password;
     RoomState state;
     List<WsSessionWrapper> sessionList;
 }

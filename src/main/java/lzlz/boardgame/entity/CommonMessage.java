@@ -11,8 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CommonMessage {
-    int id;
     String message;
-    String err;
+    String errmessage;
     String data;
 }

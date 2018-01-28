@@ -85,9 +85,27 @@
                 <button class="layui-btn layui-btn-primary layui-btn-xs"
                         id="btn-send" style="width:25%">发送</button>
             </div>
-            <button class="layui-btn layui-btn-danger"
+            <button class="layui-btn layui-btn-danger" id="btn-create-room"
                     style="width:100%;position: absolute;left:0;bottom:0;">创建房间</button>
         </div>
+    </div>
+</div>
+<div id="create-room-panel" hidden>
+    <div class="layui-bg-cyan" style="padding: 20px 10px;line-height: 22px; font-weight: 300;color:#454545;">
+        <form class="layui-form layui-form-pane form-create-room" action="/api/game/createroom">
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-bg-gray">房间标题</label>
+            <div class="layui-input-block">
+                <input type="text" name="room-title" placeholder="" class="layui-input layui-bg-gray">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-bg-gray">密码(可选)</label>
+            <div class="layui-input-block">
+                <input type="text" name="room-password" placeholder="" class="layui-input layui-bg-gray">
+            </div>
+        </div>
+        </form>
     </div>
 </div>
 <script src="/static/plugin/layui/layui.js"></script>
@@ -177,6 +195,36 @@
             websocket.close();
         }
     };
+</script>
+<script>
+    layui.use('layer', function() {
+        var $ = layui.jquery, layer = layui.layer;
+
+        $('#btn-create-room').click(function(){
+            layer.open({
+                type: 1
+                ,title: '创建房间'
+                ,closeBtn: false
+                ,area: ['400px','auto']
+                ,shade: 0.8
+                ,id: 'layer-create-room' //设定一个id，防止重复弹出
+                ,btn: ['确定', '关闭']
+                ,btnAlign: 'c'
+                ,content: $('#create-room-panel').html()
+                ,yes: function(){
+                    // var btn = layero.find('.layui-layer-btn');
+                    // btn.find('.layui-layer-btn0').attr({
+                    //     href: 'http://www.layui.com/'
+                    //     ,target: '_blank'
+                    // });
+                    $.get('/api/game/createroom?'+$('#layer-create-room').find('.form-create-room').serialize(),function(e){
+                        console.log(e);
+                    });
+                    layer.closeAll();
+                }
+            });
+        });
+    });
 </script>
 </body>
 </html>

@@ -3,10 +3,7 @@ package lzlz.boardgame.controller;
 import lzlz.boardgame.entity.CommonMessage;
 import lzlz.boardgame.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -27,17 +24,23 @@ public class GameHallApiController {
     }
 
     @RequestMapping("/createroom")
-    public @ResponseBody CommonMessage createRoom(HttpServletRequest request){
+    public @ResponseBody CommonMessage createRoom(HttpServletRequest request,
+                                                  @RequestParam("room-title") String title,
+                                                  @RequestParam(value = "room-password", required = false) String password){
         CommonMessage msg = new CommonMessage();
         HttpSession httpSession = request.getSession();
         if(httpSession.getAttribute("room")!=null){
-            msg.setId(-1);
-            msg.setMessage("已在房间中");
+            msg.setErrmessage("已在房间中");
             return msg;
         }
-         String roomID = roomService.createRoom();
-        msg.setData("roomId");
-        msg.setMessage("");
+        if(title==null||"".equals(title)){
+            msg.setErrmessage("房间名不能为空");
+            return msg;
+        }
+        String roomID = roomService.createRoom(title, password);
+        msg.setData(roomID);
+        msg.setMessage("创建成功");
+        httpSession.setAttribute("room",roomID);
         return msg;
     }
 }
