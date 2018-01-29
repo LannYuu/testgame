@@ -6,8 +6,6 @@ import javax.websocket.*;
  * 注意实现类也需要加上这几个注解，不然会出错
  */
 public interface ChatEndPoint {
-    @OnOpen
-    void onOpen(Session session, String name);
 
     @OnMessage
     void onMessage(String message, Session session);

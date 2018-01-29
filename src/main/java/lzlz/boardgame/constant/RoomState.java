@@ -8,5 +8,10 @@ public enum RoomState {
     /**
      * 已经有用户连接的房间
      */
-    Connected
+    Connected,
+    /**
+     * 准备就绪的房间
+     */
+    Ready,
+    Run;
 }

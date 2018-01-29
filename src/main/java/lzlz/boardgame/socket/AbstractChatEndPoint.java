@@ -1,6 +1,7 @@
 package lzlz.boardgame.socket;
 
 import lombok.extern.slf4j.Slf4j;
+import lzlz.boardgame.util.StringUtils;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -37,9 +38,12 @@ public abstract class AbstractChatEndPoint implements ChatEndPoint {
             session.getBasicRemote().sendText("<pre>"+head + message+"</pre>");
     }
 
+    /**
+     * 删除消息的特殊符号
+     */
     protected String getText(String text){
         //删除普通标签
-        text = text.replaceAll("<(S*?)[^>]*>.*?|<.*? />", "");
+        text = StringUtils.filterHTML(text);
         //删除转义字符
         text = text.replaceAll("&.{2,6}?;", "");
         return text;

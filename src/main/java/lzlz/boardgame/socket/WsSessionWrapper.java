@@ -1,6 +1,6 @@
 package lzlz.boardgame.socket;
 
-import lzlz.boardgame.entity.User;
+import lzlz.boardgame.entity.Player;
 
 import javax.websocket.Session;
 import java.util.Date;
@@ -12,9 +12,9 @@ import java.util.Date;
  */
 public class WsSessionWrapper {
     private final Session session;
-    private final User user;
+    private final Player user;
     private Date lastActiveTime;
-    public WsSessionWrapper(Session session, User user){
+    public WsSessionWrapper(Session session, Player user){
         this.session = session;
         this.user = user;
         lastActiveTime = new Date();
@@ -35,7 +35,7 @@ public class WsSessionWrapper {
         return session;
     }
 
-    public User getUser() {
+    public Player getUser() {
         return user;
     }
 

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"/>
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
     <title>hall</title>
-    <link rel="stylesheet" href="/static/plugin/layui/css/layui.css">
+    <link rel="stylesheet" href="/static/plugin/layui/css/layui.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
     <style>
         #room-wrap{
@@ -48,10 +48,14 @@
 </head>
 <body class="layui-bg-cyan my-body-fix-top my-scroll">
 <ul class="layui-nav layui-bg-green my-nav-fix-top">
-    <li class="layui-nav-item"><img height="40" src="/static/img/favicon.png">&emsp;</li>
+    <li class="layui-nav-item"><img height="40" src="/static/img/favicon.png"/></li>
     <li class="layui-nav-item layui-this"><a href="">大厅</a></li>
 </ul>
 <div class="layui-container" style="margin-top:10px;">
+    <div class="layui-bg-red" style="margin-bottom: 10px;padding: 5px;" th:if="${session.gameToken}">
+        已在房间中
+        <a class="my-a" th:href="@{/game/room}">点击进入</a>
+    </div>
     <div class="layui-row">
         <div class="layui-col-xs6 layui-col-sm8 layui-col-lg9" style="padding-right:10px">
             <div></div>
@@ -91,25 +95,26 @@
     </div>
 </div>
 <div id="create-room-panel" hidden>
-    <div class="layui-bg-cyan" style="padding: 20px 10px;line-height: 22px; font-weight: 300;color:#454545;">
-        <form class="layui-form layui-form-pane form-create-room" action="/api/game/createroom">
-        <div class="layui-form-item">
-            <label class="layui-form-label layui-bg-gray">房间标题</label>
-            <div class="layui-input-block">
-                <input type="text" name="room-title" placeholder="" class="layui-input layui-bg-gray">
+    <div class="layui-bg-cyan" style="padding: 20px 10px;height:120px;">
+        <form class="layui-form layui-form-pane form-create-room" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label layui-bg-gray">房间标题</label>
+                <div class="layui-input-block">
+                    <input type="text" name="room-title" placeholder="" class="layui-input layui-bg-gray">
+                </div>
             </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label layui-bg-gray">密码(可选)</label>
-            <div class="layui-input-block">
-                <input type="text" name="room-password" placeholder="" class="layui-input layui-bg-gray">
+            <div class="layui-form-item">
+                <label class="layui-form-label layui-bg-gray">密码(可选)</label>
+                <div class="layui-input-block">
+                    <input type="password" name="room-password" placeholder="" class="layui-input layui-bg-gray">
+                </div>
             </div>
-        </div>
         </form>
+        <div class="my-bg-error"></div>
     </div>
 </div>
-<script src="/static/plugin/layui/layui.js"></script>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script src="/static/plugin/layui/layui.js"></script>
 <script>
     //调整布局用js
     var height = window.innerHeight;
@@ -128,35 +133,30 @@
 <script>
     //聊天服务器
     var websocket;
-    var target;
-    $.post("/api/game/hallchat",function(data){
-        var length = data.length;
-        target = data.substring(1,length-1);
-        initWebSocket(target);
+    // var target;
+    $.post("/game/hall/chattarget",function(e){
+        initWebSocket(e.data);
     });
 
-    function initWebSocket(){
+    function initWebSocket(url){
+        var target = url;
         if('WebSocket' in window){
             if(websocket){
                 websocket.close();
             }
-            // setSystemInfo("正在连接聊天服务器...");
             websocket = new WebSocket(target);
             //连接发生错误的回调方法
             websocket.onerror = function(){
                 setErrorInfo("");
             };
-
             //连接成功建立的回调方法
             websocket.onopen = function(event){
 
             };
-
             //接收到消息的回调方法
             websocket.onmessage = function(event){
                 setMessage(event.data);
             };
-
             //连接关闭的回调方法
             websocket.onclose = function(){
                 setSystemInfo("与服务器断开连接");
@@ -217,10 +217,15 @@
                     //     href: 'http://www.layui.com/'
                     //     ,target: '_blank'
                     // });
-                    $.get('/api/game/createroom?'+$('#layer-create-room').find('.form-create-room').serialize(),function(e){
+                    var $layer =$('#layer-create-room');
+                    $.post('/game/createroom?',$layer.find('.form-create-room').serialize(),function(e){
                         console.log(e);
+                        if (e.errmessage){
+                            $layer.find('.my-bg-error').text(e.errmessage);
+                        }else{
+                            layer.closeAll();
+                        }
                     });
-                    layer.closeAll();
                 }
             });
         });

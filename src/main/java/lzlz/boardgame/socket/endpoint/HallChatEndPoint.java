@@ -1,7 +1,7 @@
 package lzlz.boardgame.socket.endpoint;
 
 import lzlz.boardgame.constant.UserRole;
-import lzlz.boardgame.entity.User;
+import lzlz.boardgame.entity.Player;
 import lzlz.boardgame.socket.AbstractChatEndPoint;
 import lzlz.boardgame.socket.WsSessionWrapper;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class HallChatEndPoint extends AbstractChatEndPoint {
     private static CopyOnWriteArraySet<WsSessionWrapper> sessionSet = new CopyOnWriteArraySet<>();
 
-    @Override @OnOpen
+    @OnOpen
     public void onOpen(Session session,@PathParam("name") String name) {
         try {
             super.name=name;
@@ -38,7 +38,7 @@ public class HallChatEndPoint extends AbstractChatEndPoint {
                 Session session = wrapper.getSession();
                 if(session.equals(thisSession)){
                     wrapper.setLastActiveTime(new Date());
-                    sendText(session,getSpecialUserInfoPrefix(this.name,"我"),text);
+                    sendText(session,getSpecialUserInfoPrefix(this.name,"我"),getText(text));
                 }else if(session.isOpen()){
                     sendText(session,getUserPrefix(this.name),text);
                 }
@@ -50,7 +50,9 @@ public class HallChatEndPoint extends AbstractChatEndPoint {
 
     @Override
     public void addSession(Session session, String name) {
-        WsSessionWrapper wrapper = new WsSessionWrapper(session,new User(0, UserRole.Normal,""));
+
+        WsSessionWrapper wrapper = new WsSessionWrapper(session,
+                new Player("", UserRole.Normal,this.name,null,null));
         sessionSet.add(wrapper);
     }
 
