@@ -56,14 +56,14 @@ public abstract class AbstractChatEndPoint implements ChatEndPoint {
     }
     protected String getUserPrefix(String name){
         int length = name.length();
-        name = "用户"+name.substring(length-4,length);
+        name = name.substring(length-4,length);
         return "<span class=\"layui-bg-gray chat-head\">"
                 +formater.format(new Date())
                 +"&nbsp;"+name+":</span>&nbsp;";
     }
     protected String getSpecialUserInfoPrefix(String name,String role){
         int length = name.length();
-        name = "用户"+name.substring(length-4,length);
+        name = name;
         return "<span class=\"layui-bg-gray chat-head\">"
                 +formater.format(new Date())
                 +"&nbsp;["+role+"]"+name+":</span>&nbsp;";

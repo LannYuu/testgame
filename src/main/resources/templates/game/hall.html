@@ -48,7 +48,7 @@
 </head>
 <body class="layui-bg-cyan my-body-fix-top my-scroll">
 <ul class="layui-nav layui-bg-green my-nav-fix-top">
-    <li class="layui-nav-item"><img height="40" src="/static/img/favicon.png"/></li>
+    <li class="layui-nav-item"><a><img height="40" src="/static/img/favicon.png"/></a></li>
     <li class="layui-nav-item layui-this"><a href="">大厅</a></li>
 </ul>
 <div class="layui-container" style="margin-top:10px;">
@@ -58,9 +58,16 @@
     </div>
     <div class="layui-row">
         <div class="layui-col-xs6 layui-col-sm8 layui-col-lg9" style="padding-right:10px">
-            <div></div>
             <div id="room-wrap" >
-
+                <div class="layui-form-item">
+                    <label class="layui-form-label my-input-sm my-color-yellow" for="input-player-name"
+                           style="padding: 0 10px;">玩家名字</label>
+                    <div class="layui-input-inline">
+                       <input id="input-player-name" type="text" name="room-title" maxlength="10"
+                              class="layui-input layui-bg-gray my-input-sm" th:value="${playerName}">
+                    </div>
+                    <div class="layui-btn layui-btn-primary layui-btn-sm" id="btn-player-name">&emsp;提交&emsp;</div>
+                </div>
                 <div class="room">
                     呵呵哈哈哈！
                     <span class="creator">创建者 哈哈哈哈 </span>
@@ -116,7 +123,7 @@
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
 <script src="/static/plugin/layui/layui.js"></script>
 <script>
-    //调整布局用js
+    //调整布局
     var height = window.innerHeight;
     $("#chat-wrap").height(height-100);
     $("#chat-content")
@@ -133,13 +140,14 @@
 <script>
     //聊天服务器
     var websocket;
-    // var target;
+    var target;
     $.post("/game/hall/chattarget",function(e){
         initWebSocket(e.data);
     });
 
     function initWebSocket(url){
-        var target = url;
+        if(url)
+            target = url;
         if('WebSocket' in window){
             if(websocket){
                 websocket.close();
@@ -195,6 +203,19 @@
             websocket.close();
         }
     };
+    //修改玩家名
+    $("#btn-player-name").click(function(){
+        var $input = $("#input-player-name");
+        var playerName = $input.val().substring(0,20);
+        $.post('/game/setplayername',{data:playerName},function(e){
+            $input.val(e.data);
+            if(target){
+                target = target.replace(/[^\/]+$/,e.data)
+            }
+            websocket.close();//onclose事件已经会自动尝试重新连接 不用再写了
+        })
+
+    });
 </script>
 <script>
     layui.use('layer', function() {

@@ -11,6 +11,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Random;
 
 @Controller
 @RequestMapping("game")
@@ -18,9 +19,10 @@ public class GameController {
     @Autowired
     RoomService roomService;
 
+    private static final String defaultPlayerName ="菜鸡";
     @GetMapping("/hall")
-    public ModelAndView hall() {
-        return new ModelAndView("game/hall");
+    public ModelAndView hall(HttpServletRequest request) {
+        return new ModelAndView("game/hall").addObject("playerName",getPlayerName(request));
     }
     @GetMapping("/room")
     public ModelAndView room(HttpServletRequest request) {
@@ -35,23 +37,23 @@ public class GameController {
 
     @PostMapping("/hall/chattarget")
     public @ResponseBody CommonMessage chatServerPath(HttpServletRequest request) {
-        String name = request.getSession().getId();
         String path = request.getContextPath();
         String serverName = request.getServerName();
         int port = request.getServerPort();
         CommonMessage msg = new CommonMessage();
-        msg.setData("ws://"+serverName + ":" + port + path+"/socket/hallchat/"+name);
+        msg.setData("ws://"+serverName + ":" + port + path+"/socket/hallchat/"+getPlayerName(request));
         return msg;
     }
 
-    @RequestMapping("/test")
-    public @ResponseBody CommonMessage msg() {
-        CommonMessage msg = new CommonMessage();
-        msg.setMessage("success");
+    @PostMapping("/setplayername")
+    public @ResponseBody CommonMessage setPlayerName(CommonMessage msg,HttpServletRequest request) {
+        //把playerName 放在了 data 属性中
+        String playerName = msg.getData();
+        playerName = StringUtils.filterHTML(StringUtils.filterBlank(playerName));
+        request.getSession().setAttribute("playerName",playerName);
+        msg.setData(playerName);
         return msg;
     }
-
-
 
     @PostMapping("/createroom")
     public @ResponseBody CommonMessage createRoom(HttpServletRequest request,
@@ -77,5 +79,12 @@ public class GameController {
         msg.setData(gameToken);
         msg.setMessage("创建成功");
         return msg;
+    }
+
+    private String getPlayerName(HttpServletRequest request){
+        Object playerName = request.getSession().getAttribute("playerName");
+        if(playerName == null || "".equals(playerName))
+            playerName = defaultPlayerName+new Random().nextInt(1000);
+        return playerName.toString();
     }
 }

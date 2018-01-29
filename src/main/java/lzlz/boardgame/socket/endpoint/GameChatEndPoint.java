@@ -75,7 +75,4 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
                 +"&nbsp;"+name+":</span>&nbsp;";
     }
 
-
-
-
 }

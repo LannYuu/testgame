@@ -11,6 +11,6 @@ public class IndexController{
     public ModelAndView index() {
 
         return new ModelAndView("index")
-                .addObject("hello", "图样图森破");
+                .addObject("hello", "˙▂˙\"　 　˙０˙　　˙︿˙　　˙ω˙　　˙﹏˙　　˙△˙　　˙▽˙");
     }
 }

@@ -27,6 +27,9 @@
     background:#d9534f!important;
     color:#ffffff!important;
 }
+.my-color-yellow{
+    color: #ffe795 !important;
+}
 *{
     font-family: mononokiregular,"Microsoft YaHei UI",serif!important;
 }
@@ -64,6 +67,10 @@
     background: rgba(0,0,0,0.1);
 }
 .my-input-xs{
-    height:22px;
-    line-height: 22px;
+    height:22px!important;
+    line-height: 22px!important;
+}
+.my-input-sm{
+    height:30px!important;
+    line-height: 30px!important;
 }
