@@ -64,9 +64,14 @@
                            style="padding: 0 10px;">玩家名字</label>
                     <div class="layui-input-inline">
                        <input id="input-player-name" type="text" name="room-title" maxlength="10"
-                              class="layui-input layui-bg-gray my-input-sm" th:value="${playerName}">
+                              class="layui-input layui-bg-gray my-input-sm" th:value="${session.playerName}">
                     </div>
-                    <div class="layui-btn layui-btn-primary layui-btn-sm" id="btn-player-name">&emsp;提交&emsp;</div>
+                    <div class="layui-btn layui-btn-primary layui-btn-sm"
+                         id="btn-player-name" style="padding: 0 20px;">提交</div>
+                    <div class="layui-btn layui-btn-warm layui-btn-sm" title="刷新房间"
+                         id="btn-refresh-room" style="float: right">
+                        <i class="layui-icon">&#x1002;</i>刷新房间
+                    </div>
                 </div>
                 <div class="room">
                     呵呵哈哈哈！
@@ -203,6 +208,8 @@
             websocket.close();
         }
     };
+</script>
+<script>
     //修改玩家名
     $("#btn-player-name").click(function(){
         var $input = $("#input-player-name");
@@ -216,8 +223,13 @@
         })
 
     });
+    //刷新房间
+    $("#btn-refresh-room").click(function(){
+        $(this).find('.layui-icon').addClass('layui-anim layui-anim-rotate layui-anim-loop')
+    })
 </script>
 <script>
+    //弹出层
     layui.use('layer', function() {
         var $ = layui.jquery, layer = layui.layer;
 

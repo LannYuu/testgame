@@ -13,16 +13,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Random;
 
+/**
+ * 游戏大厅Controller
+ * @author : lzlz
+ * @description : Create by lzlz at 2018/1/29 23:29
+ */
 @Controller
 @RequestMapping("game")
-public class GameController {
+public class GameHallController {
     @Autowired
     RoomService roomService;
 
     private static final String defaultPlayerName ="菜鸡";
     @GetMapping("/hall")
     public ModelAndView hall(HttpServletRequest request) {
-        return new ModelAndView("game/hall").addObject("playerName",getPlayerName(request));
+        request.getSession().setAttribute("playerName",getPlayerName(request));
+        return new ModelAndView("game/hall");
     }
     @GetMapping("/room")
     public ModelAndView room(HttpServletRequest request) {
@@ -49,9 +55,10 @@ public class GameController {
     public @ResponseBody CommonMessage setPlayerName(CommonMessage msg,HttpServletRequest request) {
         //把playerName 放在了 data 属性中
         String playerName = msg.getData();
-        playerName = StringUtils.filterHTML(StringUtils.filterBlank(playerName));
-        request.getSession().setAttribute("playerName",playerName);
-        msg.setData(playerName);
+        playerName = StringUtils.filterSymbol(StringUtils.filterHTML(StringUtils.filterBlank(playerName)));
+        if(!"".equals(playerName))
+            request.getSession().setAttribute("playerName",playerName);
+        msg.setData(getPlayerName(request));
         return msg;
     }
 
@@ -73,7 +80,7 @@ public class GameController {
         }
 
         String roomId = roomService.createRoom(title, password);
-        Player player = roomService.joinRoom(roomId);
+        Player player = roomService.joinRoom(roomId,getPlayerName(request),null);
         String gameToken = roomId+"-"+player.getId();
         httpSession.setAttribute("gameToken",gameToken);
         msg.setData(gameToken);
@@ -83,8 +90,9 @@ public class GameController {
 
     private String getPlayerName(HttpServletRequest request){
         Object playerName = request.getSession().getAttribute("playerName");
-        if(playerName == null || "".equals(playerName))
+        if(playerName == null || "".equals(playerName)){
             playerName = defaultPlayerName+new Random().nextInt(1000);
+        }
         return playerName.toString();
     }
 }

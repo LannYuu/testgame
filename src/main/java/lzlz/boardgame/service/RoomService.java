@@ -35,19 +35,13 @@ public class RoomService {
     /**
      * 从 httprequest 中加入房间
      * @param roomId 房间UUID
-     * @return 新创建的玩家
-     */
-    public Player joinRoom(String roomId){
-        String userId = "PLAYER"+UUID.randomUUID().toString().replaceAll("-", "");
-        return joinRoom(roomId,userId);
-    }
-    /**
-     * 从 httprequest 中加入房间
-     * @param roomId 房间UUID
-     * @param userId 加入房间的用户ID
+     * @param playerName 玩家名
+     * @param userId 如果是新玩家加入输入 null
      * @return userId对应的用户
      */
-    public Player joinRoom(String roomId, String userId){
+    public Player joinRoom(String roomId, String playerName,String userId){
+        if (userId == null || "".equals(userId))
+            userId = "PLAYER"+UUID.randomUUID().toString().replaceAll("-", "");
         Room room = this.getRoom(roomId);
         boolean isNewUser = true;
         int size = room.getUserList().size();
@@ -65,7 +59,7 @@ public class RoomService {
                 if (size<ROOM_SIZE){//如果是新用户（id不同）且房间人数未达到上线
                     player = new Player();
                     player.setId(userId);
-                    player.setName("player"+room.getUserList().size());
+                    player.setName(playerName);
                     room.getUserList().add(player);
                 }
             }

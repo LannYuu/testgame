@@ -56,7 +56,6 @@ public abstract class AbstractChatEndPoint implements ChatEndPoint {
     }
     protected String getUserPrefix(String name){
         int length = name.length();
-        name = name.substring(length-4,length);
         return "<span class=\"layui-bg-gray chat-head\">"
                 +formater.format(new Date())
                 +"&nbsp;"+name+":</span>&nbsp;";

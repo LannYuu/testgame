@@ -12,6 +12,11 @@ public class StringUtils {
 
     }
 
+    public static String filterSymbol(String text){
+        String s ="[\\[\\]()?.*+{}$^`~!@#%_<>:\",/;'·！#￥（—）：；“”‘、，《。》？、【】]";
+        return text.replaceAll(s, "");
+    }
+
     public static String maxLength(String text,int maxLength) {
         if (text == null) {
             return null;
