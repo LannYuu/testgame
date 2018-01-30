@@ -226,9 +226,25 @@
             })
 
         });
+        function refreshRoom(callback){
+            $.get('/game/hall/rooms',function(roomList){
+                var $roomWrap = $('#room-wrap');
+                $roomWrap.find('.room').remove();
+                var roomHtml =[
+                    '<div class="room" id="e.">',
+                        '',
+                        '<span class="creator">创建者 哈哈哈哈 </span>',
+                    '</div>'
+                ];
+                $roomWrap.append()
+
+                callback();
+            })
+        }
         //刷新房间
         $("#btn-refresh-room").click(function(){
             $(this).find('.layui-icon').addClass('layui-anim layui-anim-rotate layui-anim-loop')
+            refreshRoom();
         })
     });
 </script>
