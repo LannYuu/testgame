@@ -95,6 +95,30 @@ public class GameHallController {
         return msg;
     }
 
+    @PostMapping("/joinroom")
+    public @ResponseBody CommonMessage joinRoom(HttpServletRequest request,
+                                                  @RequestParam("room-id") String roomId,
+                                                  @RequestParam(value = "room-password", required = false) String password){
+        CommonMessage msg = new CommonMessage();
+        HttpSession httpSession = request.getSession();
+        if(httpSession.getAttribute("gameToken")!=null){
+            msg.setErrmessage("已在房间中");
+            return msg;
+        }
+        Player player = roomService.joinRoom(roomId,getPlayerName(request),null);
+        if(player==null){
+            msg.setErrmessage("加入房间失败");
+            return msg;
+        }
+        String gameToken = roomId+"-"+player.getId();
+        httpSession.setAttribute("gameToken",gameToken);
+        msg.setData(gameToken);
+        msg.setMessage("加入房间成功");
+        return msg;
+    }
+
+
+
     private String getPlayerName(HttpServletRequest request){
         Object playerName = request.getSession().getAttribute("playerName");
         if(playerName == null || "".equals(playerName)){

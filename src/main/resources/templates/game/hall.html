@@ -49,13 +49,10 @@
 <body class="layui-bg-cyan my-body-fix-top my-scroll">
 <ul class="layui-nav layui-bg-green my-nav-fix-top">
     <li class="layui-nav-item"><a><img height="40" src="/static/img/favicon.png"/></a></li>
-    <li class="layui-nav-item layui-this"><a href="">大厅</a></li>
+    <li class="layui-nav-item layui-this"><a href="#">大厅</a></li>
+    <li class="layui-nav-item" th:if="${session.gameToken}"><a th:href="@{/game/room}">房间</a></li>
 </ul>
 <div class="layui-container" style="margin-top:10px;">
-    <div class="layui-bg-red" style="margin-bottom: 10px;padding: 5px;" th:if="${session.gameToken}">
-        已在房间中
-        <a class="my-a" th:href="@{/game/room}">点击进入</a>
-    </div>
     <div class="layui-row">
         <div class="layui-col-xs6 layui-col-sm8 layui-col-lg9" style="padding-right:10px">
             <div id="room-wrap" >
@@ -72,14 +69,6 @@
                          id="btn-refresh-room" style="float: right">
                         <i class="layui-icon">&#x1002;</i>刷新房间
                     </div>
-                </div>
-                <div class="room">
-                    呵呵哈哈哈！
-                    <span class="creator">创建者 哈哈哈哈 </span>
-                </div>
-                <div class="room">
-                    hahahahaha！
-                    <span class="creator">创建者 哈哈哈哈 </span>
                 </div>
             </div>
         </div>
@@ -107,7 +96,7 @@
     </div>
 </div>
 <div id="create-room-panel" hidden>
-    <div class="layui-bg-cyan" style="padding: 20px 10px;height:120px;">
+    <div class="layui-bg-cyan" style="padding: 20px 10px;height:60px;">
         <form class="layui-form layui-form-pane form-create-room" action="">
             <div class="layui-form-item">
                 <label class="layui-form-label layui-bg-gray">房间标题</label>
@@ -115,7 +104,7 @@
                     <input type="text" name="room-title" placeholder="" class="layui-input layui-bg-gray">
                 </div>
             </div>
-            <div class="layui-form-item">
+            <div class="layui-form-item" hidden>
                 <label class="layui-form-label layui-bg-gray">密码(可选)</label>
                 <div class="layui-input-block">
                     <input type="password" name="room-password" placeholder="" class="layui-input layui-bg-gray">
@@ -226,30 +215,53 @@
             })
 
         });
+        function joinRoom(roomId) {
+            $.post('/game/joinroom?room-id='+roomId,function(msg){
+                if(msg.errmessage){
+                    alert(msg.errmessage)
+                }else{
+                    window.location.href='/game/room'
+                }
+            })
+        }
         function refreshRoom(callback){
             $.get('/game/hall/rooms',function(roomList){
+                if(!roomList || !roomList.length){
+                    if(callback) callback();
+                    return;
+                }
                 var $roomWrap = $('#room-wrap');
                 $roomWrap.find('.room').remove();
-                var roomHtml =[
-                    '<div class="room" id="e.">',
-                        '',
-                        '<span class="creator">创建者 哈哈哈哈 </span>',
-                    '</div>'
-                ];
-                $roomWrap.append()
-
-                callback();
+                for(var i=0;i<roomList.length;i++){
+                    var room = roomList[i];
+                    var roomHtml =[
+                        '<div class="room" id="'+room.id+'">',
+                        room.message+'&emsp;',
+                        '<span class="creator">创建者 '+room.creator+' </span>',
+                        '</div>'
+                    ].join('');
+                    $roomWrap.append(roomHtml);
+                }
+                $('.room').click(function(){
+                    joinRoom($(this).attr('id'));
+                });
+                if(callback) callback();
             })
         }
         //刷新房间
         $("#btn-refresh-room").click(function(){
-            $(this).find('.layui-icon').addClass('layui-anim layui-anim-rotate layui-anim-loop')
-            refreshRoom();
-        })
+            var $icon = $(this).find('.layui-icon').addClass('layui-anim layui-anim-rotate layui-anim-loop');
+            refreshRoom(function(){
+                setTimeout(function(){
+                    $icon.removeClass('layui-anim layui-anim-rotate layui-anim-loop')
+                },1000);
+            });
+        });
+        refreshRoom();
     });
 </script>
 <script>
-    //弹出层
+    //弹出 创建房间
     layui.use('layer', function() {
         var $ = layui.jquery, layer = layui.layer;
 
@@ -265,11 +277,6 @@
                 ,btnAlign: 'c'
                 ,content: $('#create-room-panel').html()
                 ,yes: function(){
-                    // var btn = layero.find('.layui-layer-btn');
-                    // btn.find('.layui-layer-btn0').attr({
-                    //     href: 'http://www.layui.com/'
-                    //     ,target: '_blank'
-                    // });
                     var $layer =$('#layer-create-room');
                     $.post('/game/createroom?',$layer.find('.form-create-room').serialize(),function(e){
                         console.log(e);
@@ -277,6 +284,7 @@
                             $layer.find('.my-bg-error').text(e.errmessage);
                         }else{
                             layer.closeAll();
+                            window.location.href='/game/room';
                         }
                     });
                 }
