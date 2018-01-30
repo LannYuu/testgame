@@ -21,7 +21,7 @@ import java.util.Date;
 @Component
 public class GameChatEndPoint extends AbstractChatEndPoint {
     private String roomId;
-    private Player user;
+    private Player player;
 
     @Autowired
     RoomService roomService;
@@ -32,8 +32,12 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
                        @PathParam("userId")String userId){
         try {
             this.roomId = roomId;
-            this.user = roomService.connectChatServer(roomId,userId,session);
-            addSession(session,userId);
+            Player player = roomService.connectChatServer(roomId,userId,session);
+            if (player == null) {
+                session.getBasicRemote().sendText("房间没有此用户");
+                session.close();
+            }
+            this.player = player;
             session.getBasicRemote().sendText(getSystemPrefix()+"与聊天服务器连接成功");
         } catch (IOException e) {
             try {
@@ -49,8 +53,8 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
     public void broadcast(String message, Session thisSession){
         roomService.forEachChatSession(this.roomId,session->{
             String name = thisSession.equals(session)
-                    ?"[我]"+user.getName()
-                    :user.getName();
+                    ?"[我]"+ player.getName()
+                    : player.getName();
             try {
                 sendText(session,getUserPrefix(name),getText(message));
             } catch (IOException e) {

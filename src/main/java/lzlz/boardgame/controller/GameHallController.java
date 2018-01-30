@@ -2,6 +2,7 @@ package lzlz.boardgame.controller;
 
 import lzlz.boardgame.entity.CommonMessage;
 import lzlz.boardgame.entity.Player;
+import lzlz.boardgame.entity.Room;
 import lzlz.boardgame.service.RoomService;
 import lzlz.boardgame.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +12,13 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.Random;
 
 /**
  * 游戏大厅Controller
+ * Create by lzlz at 2018/1/29 23:29
  * @author : lzlz
- * @description : Create by lzlz at 2018/1/29 23:29
  */
 @Controller
 @RequestMapping("game")
@@ -51,6 +53,11 @@ public class GameHallController {
         return msg;
     }
 
+    @GetMapping("/hall/rooms")
+    public @ResponseBody List<Room> getRooms() {
+        return roomService.getRoomList();
+    }
+
     @PostMapping("/setplayername")
     public @ResponseBody CommonMessage setPlayerName(CommonMessage msg,HttpServletRequest request) {
         //把playerName 放在了 data 属性中
@@ -79,7 +86,7 @@ public class GameHallController {
             return msg;
         }
 
-        String roomId = roomService.createRoom(title, password);
+        String roomId = roomService.createRoom(title, password,getPlayerName(request));
         Player player = roomService.joinRoom(roomId,getPlayerName(request),null);
         String gameToken = roomId+"-"+player.getId();
         httpSession.setAttribute("gameToken",gameToken);

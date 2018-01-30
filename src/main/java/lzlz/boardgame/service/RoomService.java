@@ -18,12 +18,13 @@ public class RoomService {
      * 从 httprequest 中创建房间
      * @return 房间的UUID
      */
-    public String createRoom(String roomName,String roomPassword){
+    public String createRoom(String roomName,String roomPassword,String creatorName){
         String roomId = "ROOM"+UUID.randomUUID().toString().replaceAll("-", "");
         Room room = new Room();
         room.setId(roomId);
         room.setMessage(roomName);
         room.setPassword(roomPassword);
+        room.setCreator(creatorName);
         room.setState(RoomState.Initial);
         room.setUserList(new ArrayList<>());
         synchronized (roomMap){
@@ -64,11 +65,30 @@ public class RoomService {
                 }
             }
         }
+        if(room.getUserList().size()>= ROOM_SIZE)
+            room.setState(RoomState.Full);
         return player;
+    }
+
+    public List<Room> getRoomList(){
+        return new ArrayList<>(roomMap.values());
+    }
+
+    /**
+     * 遍历 roomid对应房间聊天服务器的所有session
+     * @param roomId 房间UUID
+     * @param consumer 对session的操作
+     */
+    public void forEachChatSession(String roomId, Consumer<Session> consumer){
+        Room room = roomMap.get(roomId);
+        room.getUserList().forEach(user ->{
+            consumer.accept(user.getChatSession());
+        });
     }
 
     public Player connectChatServer(String roomId, String userId,Session chatSession){
         Room room = this.getRoom(roomId);
+        //如果room中有对应的玩家则加入session
         Player player = room.getUserList().stream()
                 .filter(player1 -> player1.getId().equals(userId))
                 .findFirst().orElse(null);
@@ -84,22 +104,9 @@ public class RoomService {
                 .filter(player1 -> player1.getId().equals(userId))
                 .findFirst().orElse(null);
         if (player != null){
-            room.setState(RoomState.Connected);
             player.setGameSession(gameSession);
         }
         return player;
-    }
-
-    /**
-     * 遍历 roomid对应房间聊天服务器的所有session
-     * @param roomId 房间UUID
-     * @param consumer 对session的操作
-     */
-    public void forEachChatSession(String roomId, Consumer<Session> consumer){
-        Room room = roomMap.get(roomId);
-        room.getUserList().forEach(user ->{
-            consumer.accept(user.getChatSession());
-        });
     }
 
     /**
@@ -132,4 +139,6 @@ public class RoomService {
     public Room getRoom(String roomId){
         return roomMap.get(roomId);
     }
+
+
 }
