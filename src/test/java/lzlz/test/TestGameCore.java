@@ -20,7 +20,11 @@ public class TestGameCore {
         game.move(PlayerRole.Blue,Board.VERTICAL,1,0);
         game.move(PlayerRole.Red,Board.VERTICAL,0,0);
         game.move(PlayerRole.Blue,Board.HORIZONTAL,0,1);
-        game.move(PlayerRole.Red,Board.VERTICAL,2,0);
+        game.move(PlayerRole.Red,Board.HORIZONTAL,2,0);
+        game.move(PlayerRole.Blue,Board.VERTICAL,2,0);
+        game.move(PlayerRole.Red,Board.VERTICAL,0,1);
+        game.move(PlayerRole.Blue,Board.HORIZONTAL,1,0);
+        game.move(PlayerRole.Red,Board.HORIZONTAL,0,0);
         game.getBoard().print();
     }
 

@@ -54,9 +54,9 @@
 </ul>
 <div class="layui-container" style="margin-top:10px;">
     <div class="layui-row">
-        <div class="layui-col-xs6 layui-col-sm8 layui-col-lg9" style="padding-right:10px">
+        <div class="layui-col-xs12 layui-col-sm8 layui-col-lg9">
             <div id="room-wrap" >
-                <div class="my-input-sm" style="margin-bottom: 10px;">
+                <div  style="margin-bottom: 10px;">
                     <label class="layui-form-label my-input-sm my-color-yellow" for="input-player-name"
                            style="padding: 0 10px;">玩家名字</label>
                     <div class="layui-input-inline">
@@ -72,7 +72,7 @@
                 </div>
             </div>
         </div>
-        <div class="layui-col-xs6 layui-col-sm4 layui-col-lg3 layui-bg-green" id ="chat-wrap"
+        <div class="layui-col-xs12 layui-col-sm4 layui-col-lg3 layui-bg-green" id ="chat-wrap"
              style="position: relative;">
             <div id="chat" style="padding:15px 5px 0 10px;">
                 <div class="" id="chat-content">
@@ -116,12 +116,27 @@
 </div>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
 <script src="/static/plugin/layui/layui.js"></script>
+<script src="/static/js/mysocket.js"></script>
 <script>
     //调整布局
-    var height = window.innerHeight;
-    $("#chat-wrap").height(height-100);
+    var height1;
+    var height2;
+    var gap =0;
+    if(window.innerWidth<=768){
+        height1 = 0.5*window.innerHeight;
+        height2 = 0.35*window.innerHeight;
+    }else{
+        height1 = window.innerHeight-100;
+        height2 = window.innerHeight-120;
+        gap = "10px";
+    }
+    $("#room-wrap").css({
+        'min-height':(height2)+'px',
+        'margin-right':gap
+    });
+    $("#chat-wrap").height(height1);
     $("#chat-content")
-        .height(height-200)
+        .height(height1-90)
         .bind('DOMNodeInserted', function() {
             this.scrollTop = this.scrollHeight;
             var $this = $(this);
@@ -129,50 +144,16 @@
                 $this.find("p").eq(0).remove();
             }
         });
-    $("#room-wrap").css('min-height',(height-120)+'px');
+
 </script>
 <script>
     //聊天服务器
     var websocket;
     var target;
     $.post("/game/hall/chattarget",function(e){
-        initWebSocket(e.data);
+        target= e.data;
+        websocket = initWebSocket(e.data);
     });
-
-    function initWebSocket(url){
-        if(url)
-            target = url;
-        if('WebSocket' in window){
-            if(websocket){
-                websocket.close();
-            }
-            websocket = new WebSocket(target);
-            //连接发生错误的回调方法
-            websocket.onerror = function(){
-                setErrorInfo("");
-            };
-            //连接成功建立的回调方法
-            websocket.onopen = function(event){
-
-            };
-            //接收到消息的回调方法
-            websocket.onmessage = function(event){
-                setMessage(event.data);
-            };
-            //连接关闭的回调方法
-            websocket.onclose = function(){
-                setSystemInfo("与服务器断开连接");
-                setTimeout(function(){
-                    setSystemInfo("正在尝试重新连接..");
-                    initWebSocket(target);
-                },1000);
-            }
-        }
-        else{
-            setErrorInfo("浏览器不支持Websocket,请升级！");
-            alert('浏览器不支持Websocket,请升级！');
-        }
-    }
     function setSystemInfo(message){
         setMessage("<span class=\"layui-bg-gray chat-head\">[系统信息]:</span> " + message);
     }
@@ -182,11 +163,7 @@
     function setMessage(message) {
         $('#chat-content').append('<p>'+message+'</p>');
     }
-    window.onbeforeunload = function(){
-        if(websocket){
-            websocket.close();
-        }
-    };
+
 </script>
 <script>
     $(function(){
@@ -209,9 +186,10 @@
             $.post('/game/setplayername',{data:playerName},function(e){
                 $input.val(e.data);
                 if(target){
-                    target = target.replace(/[^\/]+$/,e.data)
+                    target = websocket.url.replace(/[^\/]+$/,e.data)
                 }
-                websocket.close();//onclose事件已经会自动尝试重新连接 不用再写了
+                websocket.close();
+                websocket = initWebSocket(target);
             })
 
         });

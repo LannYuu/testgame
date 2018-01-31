@@ -51,7 +51,12 @@ public class SquareGame {
         }
         //如果操作成功 交换
         if(board.move(player,hOrV,x,y)){
-            log.debug(player+"操作成功");
+            log.debug(player+"操作成功\t"+(hOrV?"横：":"竖：")+x+"-"+y);
+            Player winner = CheckWin();
+            if (winner != null) {
+                this.finished = true;
+                finishCallback.accept(winner.getRole());
+            }
             exchangePlayer();
         }else{
             log.debug(player+"操作失败");
@@ -70,11 +75,6 @@ public class SquareGame {
             blue.score++;
         else if (red.getRole().equals(role))
             red.score++;
-        Player winner = CheckWin();
-        if (winner != null) {
-            this.finished = true;
-            finishCallback.accept(winner.getRole());
-        }
     }
 
     private Player CheckWin(){

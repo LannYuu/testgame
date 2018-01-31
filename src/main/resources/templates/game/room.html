@@ -7,9 +7,8 @@
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
     <style>
         #board{
-            height:600px;
-            width:600px;
             background-color: #ffe795;
+            height:300px;
         }
         .board-item{
             float:left;
@@ -41,12 +40,12 @@
         .range-red{
             background:#FF5722;
             opacity: .8;
-            box-shadow : 0 0 0 2px #fff;
+            box-shadow : 0 0 0 1px #fff;
         }
         .range-blue{
             background:#1E9FFF;
             opacity: .8;
-            box-shadow : 0 0 0 2px #fff
+            box-shadow : 0 0 0 1px #fff
         }
         .edge-red{
             background: #FF5722;
@@ -62,6 +61,22 @@
             background:#1E9FFF;
             cursor: inherit;
         }
+
+        #chat-content{
+            overflow-y:hidden;
+        }
+        #chat-content p{
+            margin:5px 5px 0;
+            font-size:14px;
+        }
+        #chat-content p .chat-head{
+            margin-left:-5px;
+        }
+        #chat-content pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size:14px;
+        }
     </style>
 </head>
 <body class="layui-bg-cyan my-body-fix-top my-scroll">
@@ -71,99 +86,141 @@
     <li class="layui-nav-item layui-this"><a>房间</a></li>
 </ul>
 <div class="layui-container" style="margin-top: 10px;">
-    <div id="board">
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h edge-blue"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h edge-red"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
+    <div class="layui-row">
+        <div id="board" class="layui-col-xs12 layui-col-sm10 layui-col-md8 layui-col-lg7" >
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h edge-blue"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h edge-red"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
 
-        <div class="board-item board-v edge-red"></div>
-        <div class="board-item board-range range-red"></div>
-        <div class="board-item board-v edge-blue"></div>
-        <div class="board-item board-range range-blue"></div>
-        <div class="board-item board-v edge-red"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
+            <div class="board-item board-v edge-red"></div>
+            <div class="board-item board-range range-red"></div>
+            <div class="board-item board-v edge-blue"></div>
+            <div class="board-item board-range range-blue"></div>
+            <div class="board-item board-v edge-red"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
 
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h edge-red"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h edge-blue"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h edge-red"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h edge-blue"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
 
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
 
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
 
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
 
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
 
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
-        <div class="board-item board-range"></div>
-        <div class="board-item board-v"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
+            <div class="board-item board-range"></div>
+            <div class="board-item board-v"></div>
 
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
-        <div class="board-item board-h"></div>
-        <div class="board-item board-point"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+            <div class="board-item board-h"></div>
+            <div class="board-item board-point"></div>
+        </div>
+        <div class="layui-col-xs12 layui-col-sm10 layui-col-md4 layui-col-lg5"
+         id="chat-wrap">
+            <div id="chat" class="layui-bg-green" style="margin:0px 5px 0 40px;padding:0 10px;height: 100%;position: relative;">
+                <div class="" id="chat-content">
+                    <p>
+                        <span class="my-bg-green chat-head">[系统信息]:</span>
+                        连接游戏服务器...
+                    </p>
+                    <p>
+                        <span class="my-bg-green chat-head">[系统信息]:</span>
+                        连接聊天服务器...
+                    </p>
+                </div>
+                <div style="width:95%;position: absolute;left:3%;bottom:10px;">
+                    <div class="layui-input-inline" style="width:70%;">
+                        <input id="input-message" type="text" placeholder="回车发送消息" title="回车发送消息"
+                               class="layui-input my-input-sm"/>
+                    </div>
+                    <button class="layui-btn layui-btn-primary layui-btn-sm"
+                            id="btn-send" style="width:25%">发送</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
 <script src="/static/plugin/layui/layui.js"></script>
+<script>
+    // var height =Math.min(window.innerHeight-90,window.innerWidth-30) ;
+    var $board = $('#board');
+    $board.height($board.width());
+    $('#chat-wrap').height($board.height());
+</script>
+<script>
+    function setSystemInfo(message){
+        setMessage("<span class=\"my-bg-green chat-head\">[系统信息]:</span> " + message);
+    }
+    function setErrorInfo(message){
+        setMessage("<span class=\"my-bg-error chat-head\">[错误]: " + message+"</span>");
+    }
+    function setMessage(message) {
+        $('#chat-content').append('<p>'+message+'</p>');
+    }
+</script>
 </body>
 </html>
