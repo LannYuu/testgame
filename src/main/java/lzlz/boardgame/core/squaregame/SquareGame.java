@@ -1,6 +1,7 @@
 package lzlz.boardgame.core.squaregame;
 
 import lombok.extern.slf4j.Slf4j;
+import lzlz.boardgame.core.Game;
 import lzlz.boardgame.core.squaregame.board.Board;
 
 import java.util.function.Consumer;
@@ -11,7 +12,7 @@ import java.util.function.Consumer;
  * @author : lzlz
  */
 @Slf4j
-public class SquareGame {
+public class SquareGame implements Game{
     private final Player blue;//蓝色方 先手
     private final Player red;//红色方
     private final Board board;//棋盘
@@ -46,7 +47,7 @@ public class SquareGame {
 
     public void move(PlayerRole player,boolean hOrV, int x, int y){
         if (finished||!active.getRole().equals(player)){
-            log.debug(player+"操作失败");
+            log.trace(player+"操作失败");
             return;
         }
         //如果操作成功 交换
@@ -55,7 +56,9 @@ public class SquareGame {
             Player winner = CheckWin();
             if (winner != null) {
                 this.finished = true;
+                log.debug(winner.getRole()+"获得胜利");
                 finishCallback.accept(winner.getRole());
+                return;
             }
             exchangePlayer();
         }else{

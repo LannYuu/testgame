@@ -77,7 +77,6 @@ public class TestSocketEndPoint {
 
     private void sendMessage(String message) throws IOException {
         this.session.getBasicRemote().sendText(message);
-        //this.session.getAsyncRemote().sendText(message);
     }
 
     private static int getOnlineCount() {

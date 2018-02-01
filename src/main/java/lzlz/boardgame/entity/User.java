@@ -5,19 +5,21 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lzlz.boardgame.constant.UserRole;
+import lzlz.boardgame.core.squaregame.PlayerRole;
 
 import javax.websocket.Session;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Player {
+public class User {
     String id;
     UserRole role;
     String name;
+    PlayerRole playerRole;
 
     @JsonIgnore
-    Session chatSession;
+    String chatSessionId;
     @JsonIgnore
-    Session gameSession;
+    String gameSessionId;
 }

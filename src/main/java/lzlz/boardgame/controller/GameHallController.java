@@ -1,9 +1,9 @@
 package lzlz.boardgame.controller;
 
 import lzlz.boardgame.entity.CommonMessage;
-import lzlz.boardgame.entity.Player;
+import lzlz.boardgame.entity.User;
 import lzlz.boardgame.entity.Room;
-import lzlz.boardgame.service.RoomService;
+import lzlz.boardgame.service.HallService;
 import lzlz.boardgame.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,7 +24,7 @@ import java.util.Random;
 @RequestMapping("game")
 public class GameHallController {
     @Autowired
-    RoomService roomService;
+    HallService hallService;
 
     private static final String defaultPlayerName ="菜鸡";
     @GetMapping("/hall")
@@ -43,7 +43,7 @@ public class GameHallController {
         return mv;
     }
 
-    @PostMapping("/hall/chattarget")
+    @GetMapping("/hall/chattarget")
     public @ResponseBody CommonMessage chatServerPath(HttpServletRequest request) {
         String path = request.getContextPath();
         String serverName = request.getServerName();
@@ -55,11 +55,16 @@ public class GameHallController {
 
     @GetMapping("/hall/rooms")
     public @ResponseBody List<Room> getRooms() {
-        return roomService.getRoomList();
+        return hallService.getRoomList();
     }
 
     @PostMapping("/setplayername")
     public @ResponseBody CommonMessage setPlayerName(CommonMessage msg,HttpServletRequest request) {
+        if(request.getSession().getAttribute("gameToken")!=null){
+            msg.setErrmessage("已在房间中");
+            msg.setData(getPlayerName(request));
+            return msg;
+        }
         //把playerName 放在了 data 属性中
         String playerName = msg.getData();
         playerName = StringUtils.filterSymbol(StringUtils.filterHTML(StringUtils.filterBlank(playerName)));
@@ -86,8 +91,8 @@ public class GameHallController {
             return msg;
         }
 
-        String roomId = roomService.createRoom(title, password,getPlayerName(request));
-        Player player = roomService.joinRoom(roomId,getPlayerName(request),null);
+        String roomId = hallService.createRoom(title, password,getPlayerName(request));
+        User player = hallService.joinRoom(roomId,getPlayerName(request),null);
         String gameToken = roomId+"-"+player.getId();
         httpSession.setAttribute("gameToken",gameToken);
         msg.setData(gameToken);
@@ -105,7 +110,7 @@ public class GameHallController {
             msg.setErrmessage("已在房间中");
             return msg;
         }
-        Player player = roomService.joinRoom(roomId,getPlayerName(request),null);
+        User player = hallService.joinRoom(roomId,getPlayerName(request),null);
         if(player==null){
             msg.setErrmessage("加入房间失败");
             return msg;
@@ -126,4 +131,5 @@ public class GameHallController {
         }
         return playerName.toString();
     }
+
 }

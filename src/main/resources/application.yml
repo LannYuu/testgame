@@ -50,4 +50,3 @@ spring:
 logging:
     level:
         root: info
-        lzlz.boardgame.websocket: debug

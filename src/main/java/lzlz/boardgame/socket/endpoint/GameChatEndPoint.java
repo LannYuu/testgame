@@ -1,10 +1,12 @@
 package lzlz.boardgame.socket.endpoint;
 
-import lzlz.boardgame.entity.Player;
+import lzlz.boardgame.entity.Room;
+import lzlz.boardgame.entity.User;
+import lzlz.boardgame.service.HallService;
 import lzlz.boardgame.service.RoomService;
 import lzlz.boardgame.socket.AbstractChatEndPoint;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -12,19 +14,30 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.Date;
 
-/**  
- * 房间聊天服务器  
- * createBy lzlz at 2018/1/26 13:38 
- * @author : lzlz  
- */ 
-@ServerEndpoint(value = "/socket/room/chat/{roomId}-{userId}")
-@Component
+/**
+ * 房间聊天服务器
+ * createBy lzlz at 2018/1/26 13:38
+ * @author : lzlz
+ */
+@ServerEndpoint(value = "/socket/room/chat/{roomId}/{userId}")
+@Controller
 public class GameChatEndPoint extends AbstractChatEndPoint {
     private String roomId;
-    private Player player;
+    private User player;
+    //两个坑
+    //1.不能直接autowired对象，必须用方法来注入（猜测因为ServerEndpoint在service之前注入）
+    //2.ServerEndpoint不是单例的，Controller是单例的，这里注入service是无法在所有连接的对象中使用的，必须static
+    private static RoomService roomService;
+    private static HallService hallService;
 
     @Autowired
-    RoomService roomService;
+    void injectRoomService(RoomService service){
+        roomService = service;
+    }
+    @Autowired
+    void injectHallService(HallService service){
+        hallService = service;
+    }
 
     @OnOpen
     public void onOpen(Session session,
@@ -32,13 +45,20 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
                        @PathParam("userId")String userId){
         try {
             this.roomId = roomId;
-            Player player = roomService.connectChatServer(roomId,userId,session);
+            Room room = hallService.getRoom(roomId);
+            if (room == null) {
+                session.getBasicRemote().sendText("没有此房间");
+                session.close();
+                return;
+            }
+            User player = roomService.connect2ChatServer(hallService.getRoom(roomId),userId,session);
             if (player == null) {
                 session.getBasicRemote().sendText("房间没有此用户");
                 session.close();
+                return;
             }
             this.player = player;
-            session.getBasicRemote().sendText(getSystemPrefix()+"与聊天服务器连接成功");
+            broadcast(player.getName()+"与聊天服务器连接成功");
         } catch (IOException e) {
             try {
                 session.close();
@@ -51,12 +71,24 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
 
     @Override
     public void broadcast(String message, Session thisSession){
-        roomService.forEachChatSession(this.roomId,session->{
+        String text = getText(message);
+        roomService.forEachChatSession(this.roomId, session->{
             String name = thisSession.equals(session)
                     ?"[我]"+ player.getName()
                     : player.getName();
             try {
-                sendText(session,getUserPrefix(name),getText(message));
+                sendText(session,getUserPrefix(name),text);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void broadcast(String message){
+        String text = getText(message);
+        roomService.forEachChatSession(this.roomId, session->{
+            try {
+                sendText(session,getSystemPrefix(),text);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -69,7 +101,7 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
 
     @Override
     public void removeSession(Session session) {
-
+        roomService.removeChatSession(player.getId());
     }
 
     @Override
@@ -80,3 +112,5 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
     }
 
 }
+
+
