@@ -58,7 +58,7 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
                 return;
             }
             this.player = player;
-            broadcast(player.getName()+"与聊天服务器连接成功");
+            broadcast(player.getName()+" 与聊天服务器连接成功");
         } catch (IOException e) {
             try {
                 session.close();
@@ -68,6 +68,11 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
         }
     }
 
+    @Override @OnClose
+    public void onClose(Session session) {
+        broadcast(player.getName()+" 与聊天服务器点断开连接");
+        removeSession(session);
+    }
 
     @Override
     public void broadcast(String message, Session thisSession){
