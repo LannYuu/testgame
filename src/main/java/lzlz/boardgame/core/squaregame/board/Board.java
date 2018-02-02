@@ -32,7 +32,7 @@ public class Board {
      * createBy lzlz at 2018/1/31 16:35
      * @author : lzlz
      */
-    void init(){
+    private void init(){
         horizontalEdgeArr = new BoardEdge[size][size-1];
         verticalEdgeArr = new BoardEdge[size][size-1];
         rangeArr = new BoardRange[size-1][size-1];
@@ -68,30 +68,26 @@ public class Board {
         }
     }
 
-    /**
-     * 测试用，打印整个棋盘
-     * createBy lzlz at 2018/1/31 12:26
-     * @author : lzlz
-     */
-    public void print(){
-
-        char[][] printChars = new char[2*size-1][2*size-1];
-        //初始设置所有字符为\t
-//        for (int i = 0; i < 2 * size - 1; i++) {
-//            for (int j = 0; j < 2 * size - 1; j++) {
-//                printChars[i][j]='\t';
-//            }
-//        }
-
+    public int[] getBoardData(){
+        int[][] data = getData();
+        int length = 2*size-1;
+        int[]gameData = new int[length*length];
+        for (int i = 0; i < length; i++) {
+            System.arraycopy(data[i], 0, gameData, i * length, length);
+        }
+        return gameData;
+    }
+    private int[][] getData(){
+        int[][] printChars = new int[2*size-1][2*size-1];
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size - 1; j++) {
                 BoardEdge edge = horizontalEdgeArr[i][j];
                 //填入横向边
-                char c = getChar(edge.getOwner());
+                int c = getBoardData(edge.getOwner())*10;
                 printChars[2*i][2*j+1]=c;
                 //填入纵向边
                 edge = verticalEdgeArr[i][j];
-                c = getChar(edge.getOwner());
+                c = getBoardData(edge.getOwner())*100;
                 printChars[2*j+1][2*i]=c;
             }
         }
@@ -99,31 +95,40 @@ public class Board {
         for (int i = 0; i < size -1; i++) {
             for (int j = 0; j < size - 1; j++) {
                 BoardRange range = rangeArr[i][j];
-                char c = getChar(range.getOwner());
+                int c = getBoardData(range.getOwner());
                 printChars[2*i+1][2*j+1]=c;
             }
         }
+        return printChars;
+    }
+    /**
+     * 测试用，打印整个棋盘
+     * createBy lzlz at 2018/1/31 12:26
+     * @author : lzlz
+     */
+    public void print(){
+        int[][] printData = getData();
         for (int i = 0; i < 2 * size - 1; i++) {
 
             for (int j = 0; j < 2 * size - 1; j++) {
-                System.out.print(printChars[i][j]+"\t");
+                System.out.print(printData[i][j]+"\t");
             }
             System.out.println();
         }
 
     }
     //测试用，打印棋盘
-    private char getChar(PlayerRole role){
-        char[] chars = new char[]{'○','●','×'};
+    private int getBoardData(PlayerRole role){
+        int[] tags = new int[]{1,2,3};//0是不存在的位置 1是空 2是blue 3是red
         if (role == null)
-            return chars[2];
+            return tags[0];
         switch (role) {
             case Blue:
-                return chars[0];
+                return tags[1];
             case Red:
-                return chars[1];
+                return tags[2];
         }
-        return chars[2];
+        return tags[0];
     }
 
 }

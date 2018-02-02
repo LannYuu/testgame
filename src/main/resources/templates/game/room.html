@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
     <title>room</title>
     <link rel="stylesheet" href="/static/plugin/layui/css/layui.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
@@ -16,26 +17,26 @@
         }
         .board-point{
             background:#444;
-            height:4%;
-            width:4%;
+            /*height:4%;*/
+            /*width:4%;*/
         }
         .board-h{
             background:#009688;
-            height:4%;
-            width:20%;
+            /*height:4%;*/
+            /*width:20%;*/
         }
         .board-v{
             background:#009688;
-            height:20%;
-            width:4%;
+            /*height:20%;*/
+            /*width:4%;*/
         }
         .board-h:hover,.board-v:hover{
             background:#5FB878;
             cursor: pointer;
         }
         .board-range{
-            height:20%;
-            width:20%;
+            /*height:20%;*/
+            /*width:20%;*/
         }
         .range-red{
             background:#FF5722;
@@ -180,7 +181,10 @@
         </div>
         <div class="layui-col-xs12 layui-col-sm10 layui-col-md4 layui-col-lg5"
          id="chat-wrap">
-            <div id="chat" class="layui-bg-green" style="margin:0px 5px 0 40px;padding:0 10px;height: 100%;position: relative;">
+            <div id="chat" class="layui-bg-green" style="margin:0 5px 0 40px;padding:10px;height: 100%;position: relative;">
+                <div class="layui-bg-gray" style="line-height: 30px;font-size:30px;text-align:center">
+                    <span  style="color:#1E9FFF">12</span>:<span style="color:#FF5722">10</span>
+                </div>
                 <div class="" id="chat-content">
                     <p>
                         <span class="my-bg-green chat-head">[系统信息]:</span>
@@ -205,14 +209,25 @@
 </div>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
 <script src="/static/plugin/layui/layui.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.13/vue.min.js"></script>
 <script src="/static/js/mysocket.js"></script>
+<!--/*调整布局*/-->
 <script >
     // var height =Math.min(window.innerHeight-90,window.innerWidth-30) ;
     var $board = $('#board');
     $board.height($board.width());
-    $('#chat-wrap').height($board.height());
+    $('#chat').height($board.height()-20);
+    $('#chat-content').height($board.height()-100)
+        .bind('DOMNodeInserted', function() {
+            this.scrollTop = this.scrollHeight;
+            var $this = $(this);
+            if(1.5*$this.height()<this.scrollHeight){
+                $this.find("p").eq(0).remove();
+            }
+        });
 
 </script>
+<!--/*websocket*/-->
 <script th:inline="text">
     var token = '[[${session.gameToken.replace("-","/")}]]';
     var wsurl = document.URL.match(/^https?:\/\/[^\/]+/)[0].replace(/^https?/,"ws");
@@ -256,6 +271,44 @@
             $message.val(null);
         }
     });
+</script>
+<!--/*游戏控制*/-->
+<script>
+   // var $boardItem = $('#board').find('.board-item').each(function(){
+   //     console.log($(this).hasClass('board-point'));
+   // });
+   const layout={
+       3:["8%","38%"],
+       5:["4%","20%"],
+       7:["3%","13%"]
+   };
+   var gameData={
+       role:'red',
+       size:5,
+       redScore:3,
+       blueScore:2,
+       isFinished:0,
+       data:[
+           0, 30, 0, 20, 0, 10, 0, 10, 0,
+           300, 3, 200, 2, 200, 1, 100, 1, 100,
+           0, 20, 0, 20, 0, 10, 0, 10, 0,
+           300, 2, 300, 3, 200, 1, 100, 1, 100,
+           0, 30, 0, 30, 0, 10, 0, 10, 0,
+           100, 1, 100, 1, 100, 1, 100, 1, 100,
+           0, 10, 0, 10, 0, 10, 0, 10, 0,
+           100, 1, 100, 1, 100, 1, 100, 1, 100,
+           0, 10, 0, 10, 0, 10, 0, 10, 0
+       ]
+   };
+   gameData.layout = layout[gameData.size];
+   new Vue({
+       el: '#board',
+       data: gameData,
+       methods:{
+
+       }
+   })
+
 </script>
 </body>
 </html>

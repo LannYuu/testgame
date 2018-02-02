@@ -13,6 +13,7 @@ public class EmbeddedServletContainerConfig{
     public EmbeddedServletContainerCustomizer containerCustomizer() {
 
         return container -> {
+            container.setSessionTimeout(3600);//单位秒
             container.addErrorPages(new ErrorPage(HttpStatus.BAD_REQUEST, "/error/400"));
             container.addErrorPages(new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/error/500"));
             container.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/error/404"));

@@ -7,11 +7,13 @@ import lzlz.boardgame.core.squaregame.board.Board;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 public class TestGameCore {
     private SquareGame game;
     @Before
     public void before(){
-        game = new SquareGame(GameSize.Three);
+        game = new SquareGame(GameSize.Five);
     }
 
     @Test
@@ -33,6 +35,7 @@ public class TestGameCore {
         game.move(PlayerRole.Blue,Board.HORIZONTAL,1,0);
         game.move(PlayerRole.Red,Board.HORIZONTAL,0,0);
         game.getBoard().print();
+        System.out.println(Arrays.toString(game.getBoard().getBoardData()));
     }
 
 }
