@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.Session;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,36 @@ public class RoomService {
      */
     public void forEachChatSession(String roomId, Consumer<Session> consumer){
         Room room = hallService.getRoom(roomId);
-        room.getUserList().forEach(user -> consumer.accept(chatSessionMap.get(user.getId())));
+        synchronized (chatSessionMap) {
+            room.getUserList().forEach(user -> consumer.accept(chatSessionMap.get(user.getId())));
+        }
+    }
+
+    /**
+     * 离开房间
+     */
+    public void leaveRoom(String roomId,String userId){
+        Room room = hallService.getRoom(roomId);
+        if (room ==null) {//如果存在房间，才移除房间中的用户
+            return;
+        }
+        User user = room.getUserList().stream().filter(u->u.getId().equals(userId)).findFirst().orElse(null);
+        room.getUserList().remove(user);
+
+        try {
+            synchronized (this){
+                Session session = chatSessionMap.remove(userId);
+                if (session != null) {
+                    session.close();
+                }
+                session = gameSessionMap.remove(userId);
+                if (session != null) {
+                    session.close();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void removeChatSession(String userId){
@@ -77,4 +107,5 @@ public class RoomService {
             gameSessionMap.remove(userId);
         }
     }
+
 }

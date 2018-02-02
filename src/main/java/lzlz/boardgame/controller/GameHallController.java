@@ -91,9 +91,7 @@ public class GameHallController {
             return msg;
         }
 
-        String roomId = hallService.createRoom(title, password,getPlayerName(request));
-        User player = hallService.joinRoom(roomId,getPlayerName(request),null);
-        String gameToken = roomId+"-"+player.getId();
+        String gameToken = hallService.createRoom(title, password,getPlayerName(request));
         httpSession.setAttribute("gameToken",gameToken);
         msg.setData(gameToken);
         msg.setMessage("创建成功");
@@ -127,7 +125,7 @@ public class GameHallController {
     private String getPlayerName(HttpServletRequest request){
         Object playerName = request.getSession().getAttribute("playerName");
         if(playerName == null || "".equals(playerName)){
-            playerName = defaultPlayerName+new Random().nextInt(1000);
+            playerName = defaultPlayerName+new Random().nextInt(10000);
         }
         return playerName.toString();
     }

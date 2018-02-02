@@ -16,7 +16,7 @@ public class HallService {
     private static final int ROOM_SIZE =2;
     /**
      * 从 httprequest 中创建房间
-     * @return 房间的UUID
+     * @return 拼接的两个Id:roomId-userId
      */
     public String createRoom(String roomName,String roomPassword,String creatorName){
         String roomId = "ROOM"+UUID.randomUUID().toString().replaceAll("-", "");
@@ -30,7 +30,8 @@ public class HallService {
         synchronized (roomMap){
             this.addRoom(room);
         }
-        return roomId;
+        User newUser = joinRoom(roomId,creatorName,null);
+        return roomId+"-"+newUser.getId();
     }
 
     /**
@@ -44,6 +45,8 @@ public class HallService {
         if (userId == null || "".equals(userId))
             userId = "PLAYER"+UUID.randomUUID().toString().replaceAll("-", "");
         Room room = this.getRoom(roomId);
+        if(room ==null)
+            return null;
         boolean isNewUser = true;
         int size = room.getUserList().size();
         User player = null;
@@ -79,9 +82,9 @@ public class HallService {
     /**
      * 从一个房间中移除用户，若用户为0则移除房间
      */
-    public void removeRoom(String roomId){
+    public Room removeRoom(String roomId){
         synchronized (roomMap){
-            roomMap.remove(roomId);
+            return roomMap.remove(roomId);
         }
     }
 

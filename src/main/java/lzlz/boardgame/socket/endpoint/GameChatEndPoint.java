@@ -26,7 +26,7 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
     private User player;
     //两个坑
     //1.不能直接autowired对象，必须用方法来注入（猜测因为ServerEndpoint在service之前注入）
-    //2.ServerEndpoint不是单例的，Controller是单例的，这里注入service是无法在所有连接的对象中使用的，必须static
+    //2.ServerEndpoint不是单例的，这里注入service是无法在所有连接的对象中使用的，必须static
     private static RoomService roomService;
     private static HallService hallService;
 
@@ -70,7 +70,7 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
 
     @Override @OnClose
     public void onClose(Session session) {
-        broadcast(player.getName()+" 与聊天服务器点断开连接");
+        broadcast(player.getName()+" 与聊天服务器断开连接");
         removeSession(session);
     }
 
@@ -82,7 +82,8 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
                     ?"[我]"+ player.getName()
                     : player.getName();
             try {
-                sendText(session,getUserPrefix(name),text);
+                if(session.isOpen())
+                    sendText(session,getUserPrefix(name),text);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -93,7 +94,8 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
         String text = getText(message);
         roomService.forEachChatSession(this.roomId, session->{
             try {
-                sendText(session,getSystemPrefix(),text);
+                if(session.isOpen())
+                    sendText(session,getSystemPrefix(),text);
             } catch (IOException e) {
                 e.printStackTrace();
             }

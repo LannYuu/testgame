@@ -221,7 +221,8 @@
             })
         }
         function refreshRoom(callback){
-            $.get('/game/hall/rooms',function(roomList){
+            //随机参数 防止IE浏览器缓存数据导致无法刷新
+            $.get('/game/hall/rooms?t='+Math.random(),function(roomList){
                 // if(!roomList || !roomList.length){
                 //     if(callback) callback();
                 //     return;

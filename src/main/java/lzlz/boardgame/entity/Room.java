@@ -15,6 +15,7 @@ public class Room {
     String message;
     String password;
     String creator;
+    String creatorId;
     @JsonIgnore
     SquareGame squareGame;
     @JsonIgnore
