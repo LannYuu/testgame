@@ -1,13 +1,13 @@
-package lzlz.boardgame.entity;
+package lzlz.boardgame.core.squaregame.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lzlz.boardgame.constant.PlayerState;
 import lzlz.boardgame.constant.UserRole;
 import lzlz.boardgame.core.squaregame.PlayerRole;
-
-import javax.websocket.Session;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +17,8 @@ public class User {
     UserRole role;
     String name;
     PlayerRole playerRole;
-
+    PlayerState state;
+    int score;
     @JsonIgnore
     String chatSessionId;
     @JsonIgnore

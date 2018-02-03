@@ -1,9 +1,9 @@
 package lzlz.boardgame.socket.endpoint;
 
-import lzlz.boardgame.entity.Room;
-import lzlz.boardgame.entity.User;
+import lzlz.boardgame.core.squaregame.entity.Room;
+import lzlz.boardgame.core.squaregame.entity.User;
 import lzlz.boardgame.service.HallService;
-import lzlz.boardgame.service.RoomService;
+import lzlz.boardgame.service.SquareGameService;
 import lzlz.boardgame.socket.AbstractChatEndPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,12 +27,12 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
     //两个坑
     //1.不能直接autowired对象，必须用方法来注入（猜测因为ServerEndpoint在service之前注入）
     //2.ServerEndpoint不是单例的，这里注入service是无法在所有连接的对象中使用的，必须static
-    private static RoomService roomService;
+    private static SquareGameService squareGameService;
     private static HallService hallService;
 
     @Autowired
-    void injectRoomService(RoomService service){
-        roomService = service;
+    void injectRoomService(SquareGameService service){
+        squareGameService = service;
     }
     @Autowired
     void injectHallService(HallService service){
@@ -51,7 +51,7 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
                 session.close();
                 return;
             }
-            User player = roomService.connect2ChatServer(hallService.getRoom(roomId),userId,session);
+            User player = squareGameService.connect2ChatServer(hallService.getRoom(roomId),userId,session);
             if (player == null) {
                 session.getBasicRemote().sendText("房间没有此用户");
                 session.close();
@@ -77,7 +77,7 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
     @Override
     public void broadcast(String message, Session thisSession){
         String text = getText(message);
-        roomService.forEachChatSession(this.roomId, session->{
+        squareGameService.forEachChatSession(this.roomId, session->{
             String name = thisSession.equals(session)
                     ?"[我]"+ player.getName()
                     : player.getName();
@@ -92,7 +92,7 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
 
     private void broadcast(String message){
         String text = getText(message);
-        roomService.forEachChatSession(this.roomId, session->{
+        squareGameService.forEachChatSession(this.roomId, session->{
             try {
                 if(session.isOpen())
                     sendText(session,getSystemPrefix(),text);
@@ -108,7 +108,7 @@ public class GameChatEndPoint extends AbstractChatEndPoint {
 
     @Override
     public void removeSession(Session session) {
-        roomService.removeChatSession(player.getId());
+        squareGameService.removeChatSession(player.getId());
     }
 
     @Override

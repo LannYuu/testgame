@@ -1,19 +1,20 @@
 package lzlz.boardgame.core.squaregame.board;
 
 
+import lombok.extern.slf4j.Slf4j;
 import lzlz.boardgame.core.squaregame.GameSize;
+import lzlz.boardgame.core.squaregame.MoveResult;
 import lzlz.boardgame.core.squaregame.PlayerRole;
-import lzlz.boardgame.core.squaregame.SquareGame;
 
 /**
  * 棋盘
  * createBy lzlz at 2018/1/31 9:48
  * @author : lzlz
  */
+@Slf4j
 public class Board {
     public static final boolean HORIZONTAL = true;
     public static final boolean VERTICAL = false;
-    private final SquareGame game;
     private final int size;
     //水平边
     private BoardEdge[][] horizontalEdgeArr;
@@ -22,9 +23,8 @@ public class Board {
     //方块区域
     private BoardRange[][] rangeArr;
 
-    public Board(GameSize size, SquareGame game){
+    public Board(GameSize size){
         this.size = size.getValue();
-        this.game = game;
         init();
     }
     /**
@@ -48,7 +48,7 @@ public class Board {
                 BoardEdge left = verticalEdgeArr[j][i];
                 BoardEdge bottom = horizontalEdgeArr[i+1][j];
                 BoardEdge right = verticalEdgeArr[j+1][i];
-                BoardRange thisRange = new BoardRange(game,top,right,bottom,left);
+                BoardRange thisRange = new BoardRange(top,right,bottom,left);
                 rangeArr[i][j] = thisRange;
                 top.setRightOrBottom(thisRange);
                 right.setTopOrLeft(thisRange);
@@ -58,13 +58,45 @@ public class Board {
         }
     }
 
-    public boolean move(PlayerRole role, boolean hOrV, int x, int y){
+    private MoveResult move(PlayerRole role, boolean hOrV, int x, int y){
         if (hOrV == HORIZONTAL){
+            log.debug(role+"\t横"+x+"-"+y);
             BoardEdge edge = horizontalEdgeArr[x][y];
             return edge.setOwner(role);
         }else{
+            log.debug(role+"\t竖"+x+"-"+y);
             BoardEdge edge = verticalEdgeArr[x][y];
             return edge.setOwner(role);
+        }
+    }
+
+    /**
+     * 把前端传来的index转换为board中的坐标
+     * @param role blue or red
+     * @param index int[] getBoardData()里对应的index
+     */
+    public MoveResult move(PlayerRole role, int index){
+        int length = 2*this.size-1;
+        if(index<0||index>=length*length){
+            log.debug("move失败：非法的index 数组越界");
+            return MoveResult.Fail;
+        }
+        int row = index/length;
+        int col = index%length;
+        int tagRow = row%2;
+        int tagCol = col%2;
+        if((tagRow==0&&tagCol==0)||(tagRow!=0&&tagCol!=0)){//只留下行列不同为基数或者偶数的值其他为非法
+            log.debug("move失败：非法的index 非edge位置");
+            return MoveResult.Fail;
+        }
+        if(tagCol!=0){//是横边输入
+            int x =row/2;
+            int y =(col-1)/2;
+            return move(role,HORIZONTAL,x,y);
+        }else{//是纵边输入
+            int x =col/2;
+            int y =(row-1)/2;
+            return move(role,VERTICAL,x,y);
         }
     }
 
@@ -77,7 +109,7 @@ public class Board {
         }
         return gameData;
     }
-    private int[][] getData(){
+    public int[][] getData(){//
         int[][] printChars = new int[2*size-1][2*size-1];
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size - 1; j++) {
@@ -119,7 +151,12 @@ public class Board {
     }
     //测试用，打印棋盘
     private int getBoardData(PlayerRole role){
-        int[] tags = new int[]{1,2,3};//0是不存在的位置 1是空 2是blue 3是red
+        /*0是不存在的位置 1是空 3是blue 7是red 为了区别横边纵边和方块 还会分别乘以1,10,100，判断值的时候会 %blue 和 red的值
+        因此不能取2和5的倍数
+
+
+         */
+        int[] tags = new int[]{1,3,7};
         if (role == null)
             return tags[0];
         switch (role) {

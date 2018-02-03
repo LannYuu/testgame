@@ -1,8 +1,8 @@
 package lzlz.boardgame.controller;
 
 import lzlz.boardgame.entity.CommonMessage;
-import lzlz.boardgame.entity.User;
-import lzlz.boardgame.entity.Room;
+import lzlz.boardgame.core.squaregame.entity.User;
+import lzlz.boardgame.core.squaregame.entity.Room;
 import lzlz.boardgame.service.HallService;
 import lzlz.boardgame.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

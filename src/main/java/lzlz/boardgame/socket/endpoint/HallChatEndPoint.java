@@ -1,6 +1,6 @@
 package lzlz.boardgame.socket.endpoint;
 
-import lzlz.boardgame.entity.User;
+import lzlz.boardgame.core.squaregame.entity.User;
 import lzlz.boardgame.socket.AbstractChatEndPoint;
 import lzlz.boardgame.socket.WsSessionWrapper;
 import org.springframework.stereotype.Component;

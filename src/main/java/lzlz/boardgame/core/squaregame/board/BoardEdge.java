@@ -1,14 +1,17 @@
 package lzlz.boardgame.core.squaregame.board;
 
+import lombok.extern.slf4j.Slf4j;
+import lzlz.boardgame.core.squaregame.MoveResult;
 import lzlz.boardgame.core.squaregame.PlayerRole;
 
+@Slf4j
 public class BoardEdge {
     private BoardRange topOrLeft;
     private BoardRange rightOrBottom;
 
     private PlayerRole owner;
 
-    public BoardEdge(){
+    BoardEdge(){
     }
 
     public void setTopOrLeft(BoardRange topOrLeft) {
@@ -23,17 +26,19 @@ public class BoardEdge {
         return owner;
     }
 
-    public boolean setOwner(PlayerRole owner) {
+    public MoveResult setOwner(PlayerRole owner) {
         if(this.owner!=null){
-            return false;
+            log.debug("move失败：edge已经被占有");
+            return MoveResult.Fail;
         }
         this.owner = owner;
+        boolean score =false;
         if (topOrLeft != null) {
-            topOrLeft.setOwner(owner);
+            score = topOrLeft.setOwner(owner);
         }
         if (rightOrBottom != null) {
-            rightOrBottom.setOwner(owner);
+            score =score||rightOrBottom.setOwner(owner);
         }
-        return true;
+        return score?MoveResult.Score:MoveResult.Pass;
     }
 }

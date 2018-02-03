@@ -13,7 +13,7 @@ public class TestGameCore {
     private SquareGame game;
     @Before
     public void before(){
-        game = new SquareGame(GameSize.Five);
+        game = new SquareGame(GameSize.Three);
     }
 
     @Test
@@ -22,18 +22,15 @@ public class TestGameCore {
         game.setFinishCallback(role->{
             System.out.println(role+"获得胜利");
         });
-        game.move(PlayerRole.Blue,Board.HORIZONTAL,1,1);
-        game.move(PlayerRole.Red,Board.HORIZONTAL,2,1);
-        game.move(PlayerRole.Blue,Board.VERTICAL,2,1);
-        game.move(PlayerRole.Red,Board.VERTICAL,1,1);
-        game.move(PlayerRole.Blue,Board.VERTICAL,1,0);
-        game.move(PlayerRole.Red,Board.VERTICAL,0,0);
-        game.move(PlayerRole.Blue,Board.HORIZONTAL,0,1);
-        game.move(PlayerRole.Red,Board.HORIZONTAL,2,0);
-        game.move(PlayerRole.Blue,Board.VERTICAL,2,0);
-        game.move(PlayerRole.Red,Board.VERTICAL,0,1);
-        game.move(PlayerRole.Blue,Board.HORIZONTAL,1,0);
-        game.move(PlayerRole.Red,Board.HORIZONTAL,0,0);
+        game.move(PlayerRole.Blue,1);
+        game.move(PlayerRole.Red,5);
+        game.move(PlayerRole.Blue,7);
+        game.move(PlayerRole.Red,11);//此处应得分
+        game.move(PlayerRole.Blue,3);//此处应失败 不是blue的回合
+        game.move(PlayerRole.Red,3);
+        game.move(PlayerRole.Blue,3);//此处应失败 已经被占有
+        game.move(PlayerRole.Blue,9);
+        game.move(PlayerRole.Red,13);//此处胜利
         game.getBoard().print();
         System.out.println(Arrays.toString(game.getBoard().getBoardData()));
     }

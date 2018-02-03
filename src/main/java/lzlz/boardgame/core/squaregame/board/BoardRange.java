@@ -6,15 +6,13 @@ import lzlz.boardgame.core.squaregame.SquareGame;
 import javax.validation.constraints.NotNull;
 
 public class BoardRange {
-    private final SquareGame game;
     private final BoardEdge top;
     private final BoardEdge right;
     private final BoardEdge bottom;
     private final BoardEdge left;
 
-    public BoardRange(@NotNull SquareGame game,@NotNull BoardEdge top,@NotNull  BoardEdge right,
-                      @NotNull  BoardEdge bottom,@NotNull  BoardEdge left){
-        this.game = game;
+    BoardRange(@NotNull BoardEdge top, @NotNull BoardEdge right,
+               @NotNull BoardEdge bottom, @NotNull BoardEdge left){
         this.top = top;
         this.right = right;
         this.bottom = bottom;
@@ -26,11 +24,12 @@ public class BoardRange {
         return owner;
     }
 
-    public void setOwner(PlayerRole owner) {
+    public boolean setOwner(PlayerRole owner) {
         if(top.getOwner()!=null && right.getOwner()!=null
                 && bottom.getOwner()!=null && left.getOwner()!=null){
             this.owner = owner;
-            this.game.changeScore(owner);
+            return true;
         }
+        return false;
     }
 }

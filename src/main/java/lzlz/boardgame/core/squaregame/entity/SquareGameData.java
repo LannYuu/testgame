@@ -1,4 +1,4 @@
-package lzlz.boardgame.entity;
+package lzlz.boardgame.core.squaregame.entity;
 
 import lombok.Data;
 import lzlz.boardgame.core.squaregame.PlayerRole;
@@ -10,5 +10,5 @@ public class SquareGameData {
     int redScore;
     int blueScore;
     boolean isFinished;
-    int[][] board;
+    int[] boardData;
 }

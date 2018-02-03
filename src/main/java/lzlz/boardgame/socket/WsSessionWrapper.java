@@ -1,6 +1,6 @@
 package lzlz.boardgame.socket;
 
-import lzlz.boardgame.entity.User;
+import lzlz.boardgame.core.squaregame.entity.User;
 
 import javax.websocket.Session;
 import java.util.Date;
