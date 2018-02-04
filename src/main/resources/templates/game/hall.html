@@ -96,12 +96,20 @@
     </div>
 </div>
 <div id="create-room-panel" hidden>
-    <div class="layui-bg-cyan" style="padding: 20px 10px;height:60px;">
+    <div class="layui-bg-cyan" style="padding: 20px 10px;height:120px;width:400px">
         <form class="layui-form layui-form-pane form-create-room" action="">
-            <div class="layui-form-item">
-                <label class="layui-form-label layui-bg-gray">房间标题</label>
+            <div class="layui-form-item layui-bg-gray" pane="">
+                <label class="layui-form-label ">房间标题</label>
                 <div class="layui-input-block">
                     <input type="text" name="room-title" placeholder="" class="layui-input layui-bg-gray">
+                </div>
+            </div>
+            <div class="layui-form-item layui-bg-gray" pane="">
+                <label class="layui-form-label  ">游戏大小</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="room-size" value="3" title="3x3">
+                    <input type="radio" name="room-size" value="5" title="5x5">
+                    <input type="radio" name="room-size" value="7" title="7x7">
                 </div>
             </div>
             <div class="layui-form-item" hidden>
@@ -144,7 +152,6 @@
                 $this.find("p").eq(0).remove();
             }
         });
-
 </script>
 <script>
     //聊天服务器
@@ -258,36 +265,44 @@
     });
 </script>
 <script>
-    //弹出 创建房间
-    layui.use('layer', function() {
-        var $ = layui.jquery, layer = layui.layer;
+    var form;
+    layui.use('form',function(){
+        var form = layui.form; //只有执行了这一步，部分表单元素才会自动修饰成功
+        //但是，如果你的HTML是动态生成的，自动渲染就会失效
+        //因此你需要在相应的地方，执行下述方法来手动渲染，跟这类似的还有 element.init();
+        //弹出 创建房间
+        layui.use('layer', function() {
+            var layer = layui.layer;
 
-        $('#btn-create-room').click(function(){
-            layer.open({
-                type: 1
-                ,title: '创建房间'
-                ,closeBtn: false
-                ,area: ['400px','auto']
-                ,shade: 0.8
-                ,id: 'layer-create-room' //设定一个id，防止重复弹出
-                ,btn: ['确定', '关闭']
-                ,btnAlign: 'c'
-                ,content: $('#create-room-panel').html()
-                ,yes: function(){
-                    var $layer =$('#layer-create-room');
-                    $.post('/game/createroom?',$layer.find('.form-create-room').serialize(),function(e){
-                        console.log(e);
-                        if (e.errmessage){
-                            $layer.find('.my-bg-error').text(e.errmessage);
-                        }else{
-                            layer.closeAll();
-                            window.location.href='/game/room';
-                        }
-                    });
-                }
+            $('#btn-create-room').click(function(){
+                layer.open({
+                    type: 1
+                    ,title: '创建房间'
+                    ,closeBtn: false
+                    ,area: ['auto','auto']
+                    ,shade: 0.8
+                    ,id: 'layer-create-room' //设定一个id，防止重复弹出
+                    ,btn: ['确定', '关闭']
+                    ,btnAlign: 'c'
+                    ,content: $('#create-room-panel').html()
+                    ,yes: function(){
+                        var $layer =$('#layer-create-room');
+                        $.post('/game/createroom?',$layer.find('.form-create-room').serialize(),function(e){
+                            console.log(e);
+                            if (e.errmessage){
+                                $layer.find('.my-bg-error').text(e.errmessage);
+                            }else{
+                                layer.closeAll();
+                                window.location.href='/game/room';
+                            }
+                        });
+                    }
+                });
+                form.render();
             });
         });
     });
+
 </script>
 </body>
 </html>

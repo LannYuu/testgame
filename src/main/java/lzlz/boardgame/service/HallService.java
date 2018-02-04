@@ -2,6 +2,7 @@ package lzlz.boardgame.service;
 
 import lzlz.boardgame.constant.PlayerState;
 import lzlz.boardgame.constant.RoomState;
+import lzlz.boardgame.core.squaregame.GameSize;
 import lzlz.boardgame.core.squaregame.entity.Room;
 import lzlz.boardgame.core.squaregame.entity.User;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class HallService {
      * 从 httprequest 中创建房间
      * @return 拼接的两个Id:roomId-userId
      */
-    public String createRoom(String roomName,String roomPassword,String creatorName,int size){
+    public String createRoom(String roomName,String roomPassword,String creatorName,GameSize size){
         String roomId = "ROOM"+UUID.randomUUID().toString().replaceAll("-", "");
         Room room = new Room();
         room.setId(roomId);
@@ -26,6 +27,7 @@ public class HallService {
         room.setCreator(creatorName);
         room.setState(RoomState.Initial);
         room.setCreateTime(new Date());
+        room.setSize(size);
         room.setUserList(new ArrayList<>());
         synchronized (roomMap){
             this.addRoom(room);

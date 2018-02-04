@@ -4,6 +4,7 @@ import lzlz.boardgame.core.squaregame.GameSize;
 import lzlz.boardgame.core.squaregame.PlayerRole;
 import lzlz.boardgame.core.squaregame.SquareGame;
 import lzlz.boardgame.core.squaregame.board.Board;
+import lzlz.boardgame.core.squaregame.entity.User;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,7 +14,7 @@ public class TestGameCore {
     private SquareGame game;
     @Before
     public void before(){
-        game = new SquareGame(GameSize.Three);
+        game = new SquareGame(GameSize.Three,new User(),new User());
     }
 
     @Test

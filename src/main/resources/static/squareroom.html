@@ -89,7 +89,7 @@
 <div class="layui-container" style="margin-top: 10px;">
     <div class="layui-row">
         <div id="board" class="layui-col-xs12 layui-col-sm10 layui-col-md8 layui-col-lg7" >
-            <div v-for="(value,index) in data" class="board-item" v-bind:data="index+'-'+value"
+            <div v-for="(value,index) in boardData" class="board-item" v-bind:data="index+'-'+value"
                  v-bind:class="{'board-point':value==0,'board-range':value>=1&&value<10,
                  'board-h':value>=10&&value<100,'board-v':value>=100,
                  'edge-blue':value>=10&&value%3==0,'edge-red':value>=10&&value%7==0,
@@ -98,8 +98,8 @@
         <div class="layui-col-xs12 layui-col-sm10 layui-col-md4 layui-col-lg5"
          id="chat-wrap">
             <div id="chat" class="layui-bg-green" style="margin:0 5px 0 40px;padding:10px;height: 100%;position: relative;">
-                <div class="layui-bg-gray" style="line-height: 30px;font-size:30px;text-align:center">
-                    <span  style="color:#1E9FFF">12</span>:<span style="color:#FF5722">10</span>
+                <div id="score" class="layui-bg-gray" style="line-height: 30px;font-size:30px;text-align:center">
+                    <span  style="color:#1E9FFF">{{blueScore}}</span>:<span style="color:#FF5722">{{redScore}}</span>
                 </div>
                 <div class="" id="chat-content">
                     <p>
@@ -204,7 +204,7 @@
        redScore:3,
        blueScore:2,
        isFinished:0,
-       data:[0, 70, 0, 30, 0, 10, 0, 10, 0,
+       boardData:[0, 70, 0, 30, 0, 10, 0, 10, 0,
            700, 7, 300, 3, 300, 1, 100, 1, 100,
            0, 30, 0, 30, 0, 10, 0, 10, 0,
            700, 3, 700, 7, 300, 1, 100, 1, 100,
@@ -217,10 +217,7 @@
    gameData.layout = layout[gameData.size];
    var vueBoard = new Vue({
        el: '#board',
-       data: {
-           role:gameData.role,
-           data:gameData.data
-       },
+       data: gameData,
        methods:{
            update:function(data){
                for(var i=0;i<this.data.length;i++){
@@ -228,12 +225,18 @@
                        this.$set(this.data,i,data[i]);
                }
            },
-           move:function(role,index){
-
+           move:function(index){
+               var that = this;
+               $.post("目标URL",{data:index},function(gameData1){
+                   that.update(gameData1.boardData);
+               });
            }
        }
-   })
-
+   });
+   var vueScore = new Vue({
+       el: '#score',
+       data: gameData
+   });
 </script>
 </body>
 </html>

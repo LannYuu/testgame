@@ -1,5 +1,6 @@
 package lzlz.boardgame.controller;
 
+import lzlz.boardgame.core.squaregame.GameSize;
 import lzlz.boardgame.entity.CommonMessage;
 import lzlz.boardgame.core.squaregame.entity.User;
 import lzlz.boardgame.core.squaregame.entity.Room;
@@ -77,6 +78,7 @@ public class GameHallController {
     @PostMapping("/createroom")
     public @ResponseBody CommonMessage createRoom(HttpServletRequest request,
                                                   @RequestParam("room-title") String title,
+                                                  @RequestParam(value = "room-size", required = false,defaultValue = "0") int size,
                                                   @RequestParam(value = "room-password", required = false) String password){
         CommonMessage msg = new CommonMessage();
         HttpSession httpSession = request.getSession();
@@ -90,8 +92,12 @@ public class GameHallController {
             msg.setErrmessage("房间名不能为空");
             return msg;
         }
-
-        String gameToken = hallService.createRoom(title, password,getPlayerName(request));
+        GameSize gameSize =GameSize.getSize(size);
+        if (gameSize == null) {
+            msg.setErrmessage("游戏大小不合法");
+            return msg;
+        }
+        String gameToken = hallService.createRoom(title, password,getPlayerName(request), gameSize);
         httpSession.setAttribute("gameToken",gameToken);
         msg.setData(gameToken);
         msg.setMessage("创建成功");
