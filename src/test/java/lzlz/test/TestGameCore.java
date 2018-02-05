@@ -20,9 +20,9 @@ public class TestGameCore {
     @Test
     public void test(){
 
-        game.setFinishCallback(role->{
-            System.out.println(role+"获得胜利");
-        });
+//        game.setFinishCallback(role->{
+//            System.out.println(role+"获得胜利");
+//        });
         game.move(PlayerRole.Blue,1);
         game.move(PlayerRole.Red,5);
         game.move(PlayerRole.Blue,7);

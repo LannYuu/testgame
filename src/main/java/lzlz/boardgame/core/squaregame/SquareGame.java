@@ -1,12 +1,12 @@
 package lzlz.boardgame.core.squaregame;
 
 import lombok.extern.slf4j.Slf4j;
+import lzlz.boardgame.constant.GameState;
 import lzlz.boardgame.core.Game;
 import lzlz.boardgame.core.squaregame.board.Board;
 import lzlz.boardgame.core.squaregame.entity.SquareGameData;
 import lzlz.boardgame.core.squaregame.entity.User;
 
-import java.util.function.Consumer;
 
 /**
  * “正方形”游戏逻辑
@@ -20,9 +20,11 @@ public class SquareGame implements Game{
     private final Board board;//棋盘
     private final GameSize size;//大小
     private User active;//当前操作的玩家
+    private GameState gameState;//游戏状态
+    private SquareGameData data;//游戏数据
 
     private User winner = null;
-    private Consumer<PlayerRole> finishCallback;//当游戏结束时返回
+//    private Consumer<PlayerRole> finishCallback;//当游戏结束时返回
 
     public SquareGame(GameSize size,User blue,User red){
         this.size =size;
@@ -33,30 +35,33 @@ public class SquareGame implements Game{
         this.blue.setScore(0);
         this.red.setPlayerRole(PlayerRole.Red);
         this.red.setScore(0);
+        this.gameState =GameState.Start;
         this.active = blue;
     }
 
     public User getBlue() {
         return blue;
     }
-
     public User getRed() {
         return red;
     }
+    public User getWinner(){ return winner;}
     public Board getBoard() {
         return board;
     }
+    public GameState getState(){return this.gameState;}
+
     /**
      * 把前端传来的index转换为board中的坐标
      * @param role blue or red
      * @param index int[] getBoardData()里对应的index
      */
     public MoveResult move(PlayerRole role,int index){
-        if (winner!=null){
-            log.debug("失败 已结束");
+        if (!this.gameState.equals(GameState.Start)){
+            log.debug("失败\t游戏不是开始状态");
             return MoveResult.Fail;
         }
-        if(!active.getRole().equals(role)){
+        if(!active.getPlayerRole().equals(role)){
             log.debug(role+"\t 失败 不是你的回合");
             return MoveResult.Fail;
         }
@@ -69,8 +74,9 @@ public class SquareGame implements Game{
             User winner = CheckWin();
             if (winner != null) {
                 this.winner = winner;
-                log.debug(winner.getRole()+"\t获得胜利");
-                finishCallback.accept(winner.getPlayerRole());
+                this.gameState =GameState.Finish;
+                log.debug(winner.getPlayerRole()+"\t获得胜利");
+//                finishCallback.accept(winner.getPlayerRole());
                 return MoveResult.Victory;
             }
         }
@@ -83,6 +89,7 @@ public class SquareGame implements Game{
     public MoveResult giveUp(User user){
         if(this.blue.equals(user)){
             this.winner = red;
+            this.gameState =GameState.Finish;
             return MoveResult.Victory;
         }
         else if(this.red.equals(user)){
@@ -92,16 +99,15 @@ public class SquareGame implements Game{
         return MoveResult.Fail;
     }
 
-    public int[] getBoardData(){
-        return getBoard().getBoardData();
-    }
+    public SquareGameData getSquareGameData(){
+        if(this.data==null){
+            this.data = new SquareGameData();
 
-    public SquareGameData getData(){
-        SquareGameData data = new SquareGameData();
-        data.setBlueScore(this.blue.getScore());
-        data.setRedScore(this.red.getScore());
-        data.setBoardData(this.getBoardData());
-        data.setFinished(this.isFinished());
+        }
+        this.data.setBlueScore(this.blue.getScore());
+        this.data.setRedScore(this.red.getScore());
+        this.data.setBoardData(this.getBoard().getBoardData());
+        this.data.setState(this.getState());
         return data;
     }
 
@@ -121,19 +127,18 @@ public class SquareGame implements Game{
 
     private User CheckWin(){
         int size = this.size.getValue()-1;
-        if(blue.getScore()>size*size/2)
+        if(blue.getScore()>size*size/2){
             return blue;
-        if(red.getScore()>=size*size/2)
+        }
+        if(red.getScore()>=size*size/2){
             return red;
+        }
         return null;
     }
-    public boolean isFinished(){
-        return this.winner!=null;
-    }
 
-    public void setFinishCallback(Consumer<PlayerRole> callback){
-        this.finishCallback = callback;
-    }
+//    public void setFinishCallback(Consumer<PlayerRole> callback){
+//        this.finishCallback = callback;
+//    }
 
 
 

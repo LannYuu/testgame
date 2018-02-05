@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:v-bind="http://www.w3.org/1999/xhtml"
+      xmlns:v-on="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
@@ -8,8 +9,7 @@
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
     <style>
         #board{
-            background-color: #ffe795;
-            height:300px;
+            /*background-color: #ffe795;*/
         }
         .board-item{
             float:left;
@@ -35,6 +35,7 @@
             cursor: pointer;
         }
         .board-range{
+            background: #ffe795;
             height:20%;
             width:20%;
         }
@@ -62,7 +63,34 @@
             background:#1E9FFF;
             cursor: inherit;
         }
-
+        .text-red{
+            color: #FF5722;
+        }
+        .text-blue{
+            color: #1E9FFF;
+        }
+        .bg-red{
+            background: #FF5722;
+            color:#fff;
+        }
+        .bg-blue{
+            background: #1E9FFF;
+            color:#fff;
+        }
+        .score-panel{
+            float: left;
+            width:47%;
+            height:30px;
+            line-height: 30px;
+            font-size:14px;
+            display: inline-block;
+        }
+        .score-name{
+            overflow: hidden;
+            white-space : nowrap;/*不换行*/
+            text-overflow:ellipsis;/*隐藏内容前加上省略号*/
+            max-width:70%;
+        }
         #chat-content{
             overflow-y:hidden;
         }
@@ -85,6 +113,11 @@
     <li class="layui-nav-item"><a><img height="40" src="/static/img/favicon.png"/></a></li>
     <li class="layui-nav-item"><a href="/game/hall">大厅</a></li>
     <li class="layui-nav-item layui-this"><a>房间</a></li>
+    <li class="layui-nav-item" style="float:right">
+        <button class="layui-btn layui-btn-warm layui-btn-sm" href="/game/1/leave">
+            <i class="layui-icon">&#x1007;</i>退出房间
+        </button>
+    </li>
 </ul>
 <div class="layui-container" style="margin-top: 10px;">
     <div class="layui-row">
@@ -93,13 +126,31 @@
                  v-bind:class="{'board-point':value==0,'board-range':value>=1&&value<10,
                  'board-h':value>=10&&value<100,'board-v':value>=100,
                  'edge-blue':value>=10&&value%3==0,'edge-red':value>=10&&value%7==0,
-                 'range-blue':value<10&&value>0&&value%3==0,'range-red':value<10&&value>0&&value%7==0}"></div>
+                 'range-blue':value<10&&value>0&&value%3==0,'range-red':value<10&&value>0&&value%7==0}"
+                 v-on:click="move(index)"
+            ></div>
         </div>
         <div class="layui-col-xs12 layui-col-sm10 layui-col-md4 layui-col-lg5"
          id="chat-wrap">
             <div id="chat" class="layui-bg-green" style="margin:0 5px 0 40px;padding:10px;height: 100%;position: relative;">
-                <div id="score" class="layui-bg-gray" style="line-height: 30px;font-size:30px;text-align:center">
-                    <span  style="color:#1E9FFF">{{blueScore}}</span>:<span style="color:#FF5722">{{redScore}}</span>
+                <div>
+                    <div id="score" class="">
+                        <div class="bg-blue score-panel">
+                            <span class="score-name" style="float:left">啛啛喳喳错啛啛喳喳错啛啛喳喳错存储</span>
+                            <span style="float:right;font-size:15px;">{{blueScore}}</span>
+                            <span style="float:right;font-size:20px;">{{blueScore}}</span>
+                        </div>
+                        <div class="layui-bg-gray"
+                             style="text-align: center;float: left;width:6%;line-height: 30px;font-size:20px;">:</div>
+                        <div class="bg-red score-panel">
+                            <span style="float:left;font-size:20px;">{{redScore}}</span>
+                            <span style="float:left;font-size:15px;">{{redScore}}</span>
+                            <span class="score-name" style="float:right">B准备</span>
+                        </div>
+                    </div>
+                    <!--<div class="layui-bg-gray" style="line-height: 30px;font-size:30px;text-align:center">-->
+                        <!--<span class="text-blue">{{blueScore}}</span>:<span class="text-red">{{redScore}}</span>-->
+                    <!--</div>-->
                 </div>
                 <div class="" id="chat-content">
                     <p>
@@ -201,9 +252,9 @@
    var gameData={
        role:'red',
        size:5,
-       redScore:3,
-       blueScore:2,
-       isFinished:0,
+       redScore:0,
+       blueScore:0,
+       state:0,
        boardData:[0, 70, 0, 30, 0, 10, 0, 10, 0,
            700, 7, 300, 3, 300, 1, 100, 1, 100,
            0, 30, 0, 30, 0, 10, 0, 10, 0,
@@ -214,22 +265,42 @@
            100, 1, 100, 1, 100, 1, 100, 1, 100,
            0, 10, 0, 10, 0, 10, 0, 10, 0]
    };
-   gameData.layout = layout[gameData.size];
+   gameData.layout = layout;
+   function updateGameData(data){
+       for(var prop in data){
+           if(data.hasOwnProperty(prop))
+               gameData[prop]=data[prop];
+       }
+   }
+
    var vueBoard = new Vue({
        el: '#board',
        data: gameData,
        methods:{
            update:function(data){
-               for(var i=0;i<this.data.length;i++){
-                   if(data[i]&&data[i]!==this.data[i])
-                       this.$set(this.data,i,data[i]);
+               for(var i=0;i<this.boardData.length;i++){
+                   if(data[i]&&data[i]!==this.boardData[i])
+                       this.$set(this.boardData,i,data[i]);
                }
            },
            move:function(index){
+               var value = this.boardData[index];
+               if(!(value===10||value===100))
+                   return;
+               console.log(index+'-'+value);
                var that = this;
-               $.post("目标URL",{data:index},function(gameData1){
-                   that.update(gameData1.boardData);
-               });
+               // socket.send({command:'move',numData:index},function(gameData1){
+               // });
+               // updateGameData();//这两句是SOCKET的返回用的
+               // that.update(gameData1.boardData);
+           },
+           initCss:function(size){
+               var width = this.layout[size][0];
+               var length = this.layout[size][1];
+               $('.board-point').height(width).width(width);
+               $('.board-h').height(width).width(length);
+               $('.board-v').height(length).width(width);
+               $('.board-range').height(length).width(length);
            }
        }
    });

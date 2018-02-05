@@ -1,11 +1,11 @@
 package lzlz.boardgame.constant;
 
-public enum UserRole {
+public enum UserLevel {
     Admin("admin"),
     Normal("normal");
 
     private String value;
-    UserRole(String value){
+    UserLevel(String value){
         this.value = value;
     }
     public String getValue(){

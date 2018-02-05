@@ -5,6 +5,7 @@ import lzlz.boardgame.core.squaregame.PlayerRole;
 import lzlz.boardgame.core.squaregame.SquareGame;
 import lzlz.boardgame.core.squaregame.entity.Room;
 import lzlz.boardgame.core.squaregame.entity.User;
+import lzlz.boardgame.entity.CommonMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,10 +47,8 @@ public class SquareGameService {
         List<User> userList = room.getUserList();
         if(userList.size()>0&&userList.get(0).getId().equals(userId)){
             player = userList.get(0);
-            player.setPlayerRole(PlayerRole.Blue);
         }else if(userList.size()>1&&userList.get(1).getId().equals(userId)){
             player = userList.get(1);
-            player.setPlayerRole(PlayerRole.Red);
         }
         if (player != null){
             putSession(gameSessionMap,userId,gameSession);
@@ -88,25 +87,6 @@ public class SquareGameService {
         }
         sessionMap.put(userId,newSession);
     }
-    /**
-     * 从一个房间中移除用户，若用户为0则移除房间
-     */
-    public void removePlayer(Room room, String userId){
-        List<User> userList = room.getUserList();
-        int size = userList.size();
-        for (int i = 0; i <size;i++) {
-            User user = userList.get(i);
-            if(userId.equals(user.getId())){
-                SquareGame game = room.getSquareGame();
-                if (game != null) {
-                    game.giveUp(user);
-                }
-                userList.remove(user);
-            }
-        }
-        if(userList.size()==0)
-            hallService.removeRoom(room.getId());
-    }
 
     /**
      * 遍历 roomid对应房间聊天服务器的所有session
@@ -121,16 +101,58 @@ public class SquareGameService {
     }
 
     /**
-     * 离开房间
+     * @param room 房间
+     * @param consumer 对session的操作
      */
-    public void leaveRoom(String roomId,String userId){
+    public void forEachGameSession(Room room, Consumer<Session> consumer){
+        synchronized (gameSessionMap) {
+            room.getUserList().forEach(user -> consumer.accept(gameSessionMap.get(user.getId())));
+        }
+    }
+
+    /**
+     * 认输
+     */
+    public void giveup(String roomId, String userId, CommonMessage msg) {
         Room room = hallService.getRoom(roomId);
         if (room ==null) {//如果存在房间，才移除房间中的用户
+            msg.setErrmessage("null room");
             return;
         }
-        User user = room.getUserList().stream().filter(u->u.getId().equals(userId)).findFirst().orElse(null);
-        room.getUserList().remove(user);
+        User user = room.getUserList().stream()
+                .filter(u->u.getId().equals(userId)).findFirst().orElse(null);
+        if (user == null) {
+            msg.setErrmessage("null user");
+            return;
+        }
+        SquareGame game = room.getSquareGame();
+        if (game != null) {
+            game.giveUp(user);
+            msg.setMessage("give up");
+        }
+    }
 
+    /**
+     * 离开房间
+     */
+    public void leaveRoom(String roomId, String userId, CommonMessage msg){
+        Room room = hallService.getRoom(roomId);
+        if (room ==null) {//如果存在房间，才移除房间中的用户
+            msg.setErrmessage("null room");
+            return;
+        }
+        User user = room.getUserList().stream()
+                .filter(u->u.getId().equals(userId)).findFirst().orElse(null);
+        room.getUserList().remove(user);
+        if (user == null) {
+            msg.setErrmessage("null user");
+            return;
+        }
+        SquareGame game = room.getSquareGame();
+        if (game != null) {//game!=null说明 游戏已经开始，此玩家认输
+            game.giveUp(user);
+            msg.setMessage("give up");
+        }
         try {
             synchronized (this){
                 Session session = chatSessionMap.remove(userId);
@@ -148,15 +170,27 @@ public class SquareGameService {
     }
 
     public void removeChatSession(String userId){
+        Session session;
         synchronized (chatSessionMap){
-            chatSessionMap.remove(userId);
+            session = chatSessionMap.remove(userId);
         }
+        if(session!=null)
+            try {
+                session.close();
+            } catch (IOException ignore) {
+            }
     }
 
     public void removeGameSession(String userId){
+        Session session;
         synchronized (gameSessionMap){
-            gameSessionMap.remove(userId);
+            session =  gameSessionMap.remove(userId);
         }
+        if(session!=null)
+            try {
+                session.close();
+            } catch (IOException ignore) {
+            }
     }
 
 }
