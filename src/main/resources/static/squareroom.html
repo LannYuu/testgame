@@ -175,8 +175,8 @@
     </div>
 </div>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
-<script src="/static/plugin/layui/layui.js"></script>
 <script src="https://cdn.bootcss.com/vue/2.5.13/vue.min.js"></script>
+<script src="/static/plugin/layui/layui.js"></script>
 <script src="/static/js/mysocket.js"></script>
 <!--/*调整布局*/-->
 <script >
@@ -195,50 +195,68 @@
 
 </script>
 <!--/*websocket*/-->
-<!--<script th:inline="text">-->
-    <!--var token = '[[${session.gameToken.replace("-","/")}]]';-->
-    <!--var wsurl = document.URL.match(/^https?:\/\/[^\/]+/)[0].replace(/^https?/,"ws");-->
-    <!--var mysocket = new MyWebSocket(wsurl+'/socket/room/chat/'+token,{-->
-        <!--onerror:function () {-->
-            <!--setErrorInfo("发生错误");-->
-        <!--},-->
-        <!--onmessage:function (event) {-->
-            <!--setMessage(event.data);-->
-        <!--},-->
-        <!--onclose:function(){-->
-            <!--setSystemInfo("与服务器断开连接");-->
-            <!--$('#btn-send').text('重新连接');-->
-        <!--},-->
-        <!--onopen:function(){-->
-            <!--$('#btn-send').text('发送');-->
-        <!--}-->
-    <!--});-->
-    <!--function setSystemInfo(message){-->
-        <!--setMessage("<span class=\"my-bg-green chat-head\">[系统信息]:</span> " + message);-->
-    <!--}-->
-    <!--function setErrorInfo(message){-->
-        <!--setMessage("<span class=\"my-bg-error chat-head\">[错误]: " + message+"</span>");-->
-    <!--}-->
-    <!--function setMessage(message) {-->
-        <!--$('#chat-content').append('<p>'+message+'</p>');-->
-    <!--}-->
-    <!--var $message = $("#input-message").keypress(function(e) {-->
-        <!--// 回车键事件-->
-        <!--if(e.which === 13) {-->
-            <!--$('#btn-send').click();-->
-        <!--}-->
-    <!--});-->
-    <!--//发送消息-->
-    <!--$('#btn-send').click(function(){-->
-        <!--//-->
-        <!--if(mysocket.websocket.readyState===WebSocket.CLOSED){-->
-            <!--mysocket.reconnect();-->
-        <!--}else if(mysocket.websocket.readyState===WebSocket.OPEN){-->
-            <!--mysocket.send($message.val());-->
-            <!--$message.val(null);-->
-        <!--}-->
-    <!--});-->
-<!--</script>-->
+<script th:inline="text">
+    const token = '[[${session.gameToken.replace("-","/")}]]';
+    var wsurl = document.URL.match(/^https?:\/\/[^\/]+/)[0].replace(/^https?/,"ws");
+    var myChatSocket = new MyWebSocket(wsurl+'/socket/room/chat/'+token,{
+        onerror:function () {
+            setErrorInfo("发生错误");
+        },
+        onmessage:function (event) {
+            setMessage(event.data);
+        },
+        onclose:function(){
+            setSystemInfo("与聊天服务器断开连接");
+            $('#btn-send').text('重新连接');
+        },
+        onopen:function(){
+            $('#btn-send').text('发送');
+        }
+    });
+    var myGameSocket = new MyWebSocket(wsurl+'/socket/room/game/'+token,{
+        onerror:function () {
+            setErrorInfo("发生错误");
+        },
+        onmessage:function (event) {
+            var data = JSON.parse(event.data);
+            if(data && data.errmessage)
+                setErrorInfo(data.errmessage);
+            else{
+                exec(data);
+            }
+        },
+        onclose:function(){
+            setSystemInfo("与游戏服务器断开连接");
+        },
+        onopen:function(){
+        }
+    });
+    function setSystemInfo(message){
+        setMessage("<span class=\"my-bg-green chat-head\">[系统信息]:</span> " + message);
+    }
+    function setErrorInfo(message){
+        setMessage("<span class=\"my-bg-error chat-head\">[错误]: " + message+"</span>");
+    }
+    function setMessage(message) {
+        $('#chat-content').append('<p>'+message+'</p>');
+    }
+    var $message = $("#input-message").keypress(function(e) {
+        // 回车键事件
+        if(e.which === 13) {
+            $('#btn-send').click();
+        }
+    });
+    //发送消息
+    $('#btn-send').click(function(){
+        //
+        if(myChatSocket.websocket.readyState===WebSocket.CLOSED){
+            myChatSocket.reconnect();
+        }else if(myChatSocket.websocket.readyState===WebSocket.OPEN){
+            myChatSocket.send($message.val());
+            $message.val(null);
+        }
+    });
+</script>
 <!--/*游戏控制*/-->
 <script>
    // var $boardItem = $('#board').find('.board-item').each(function(){
@@ -289,7 +307,7 @@
                    return;
                console.log(index+'-'+value);
                var that = this;
-               // socket.send({command:'move',numData:index},function(gameData1){
+               // socket.send({command:'Move',numData:index},function(gameData1){
                // });
                // updateGameData();//这两句是SOCKET的返回用的
                // that.update(gameData1.boardData);
