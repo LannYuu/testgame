@@ -1,18 +1,17 @@
 package lzlz.boardgame.service;
 
+import lombok.extern.slf4j.Slf4j;
 import lzlz.boardgame.constant.PlayerState;
-import lzlz.boardgame.core.squaregame.PlayerRole;
+import lzlz.boardgame.constant.RoomState;
 import lzlz.boardgame.core.squaregame.SquareGame;
 import lzlz.boardgame.core.squaregame.entity.Room;
 import lzlz.boardgame.core.squaregame.entity.User;
-import lzlz.boardgame.entity.CommonMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.Session;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -22,6 +21,7 @@ import java.util.function.Consumer;
  * createBy lzlz at 2018/2/3 15:26
  * @author : lzlz
  */
+@Slf4j
 @Service("RoomService")
 public class SquareGameService {
     private static final Map<String,Session> chatSessionMap = new HashMap<>();
@@ -32,9 +32,7 @@ public class SquareGameService {
 
     public User connect2ChatServer(Room room, String userId, Session chatSession){
         //如果room中有对应的玩家则加入session
-        User player = room.getUserList().stream()
-                .filter(player1 -> player1.getId().equals(userId))
-                .findFirst().orElse(null);
+        User player = hallService.getUserFromRoomById(room,userId);
         if (player != null){
             putSession(chatSessionMap,userId,chatSession);
         }
@@ -42,34 +40,34 @@ public class SquareGameService {
     }
 
     public User connect2GameServer(Room room, String userId, Session gameSession){
-        User player = null;
-        //squareGame的room只有两个玩家
-        List<User> userList = room.getUserList();
-        if(userList.size()>0&&userList.get(0).getId().equals(userId)){
-            player = userList.get(0);
-        }else if(userList.size()>1&&userList.get(1).getId().equals(userId)){
-            player = userList.get(1);
-        }
+        User player = hallService.getUserFromRoomById(room,userId);
         if (player != null){
             putSession(gameSessionMap,userId,gameSession);
         }
+
         return player;
     }
 
     /**
      * 用户准备 如果所有玩家都准备 开始游戏
+     * @return true 开始游戏 false未开始
      */
-    public void ready(Room room,String userId){
-        room.getUserList().stream()
-                .filter(player1 -> player1.getId().equals(userId))
-                .findFirst().ifPresent(player -> player.setState(PlayerState.Ready));
-        boolean isAllReady = true;
-        for (User player :room.getUserList()) {
-            isAllReady = isAllReady && PlayerState.Ready.equals(player.getState());
+    public boolean ready(Room room,String userId){
+        User user = hallService.getUserFromRoomById(room,userId);
+        if (user == null) {
+            return false;
         }
-        if(isAllReady&&room.getUserList().size()==2){
-            startGame(room,room.getUserList().get(0),room.getUserList().get(1));
+        user.setState(PlayerState.Ready);
+        User blue = room.getBlue();
+        User red = room.getRed();
+        if(blue !=null&&red!=null
+                &&PlayerState.Ready.equals(blue.getState())&&PlayerState.Ready.equals(red.getState())){
+            if(room.getSquareGame()==null){
+                startGame(room,blue,red);
+                return true;
+            }
         }
+        return false;
     }
     private void startGame(Room room,User blue,User red){
         SquareGame game = new SquareGame(room.getSize(),blue,red);
@@ -95,8 +93,11 @@ public class SquareGameService {
      */
     public void forEachChatSession(String roomId, Consumer<Session> consumer){
         Room room = hallService.getRoom(roomId);
+        User blue = room.getBlue();
+        User red = room.getRed();
         synchronized (chatSessionMap) {
-            room.getUserList().forEach(user -> consumer.accept(chatSessionMap.get(user.getId())));
+            consumer.accept(chatSessionMap.get(blue.getId()));
+            consumer.accept(chatSessionMap.get(red.getId()));
         }
     }
 
@@ -105,67 +106,78 @@ public class SquareGameService {
      * @param consumer 对session的操作
      */
     public void forEachGameSession(Room room, Consumer<Session> consumer){
+        User blue = room.getBlue();
+        User red = room.getRed();
         synchronized (gameSessionMap) {
-            room.getUserList().forEach(user -> consumer.accept(gameSessionMap.get(user.getId())));
+            consumer.accept(gameSessionMap.get(blue.getId()));
+            consumer.accept(gameSessionMap.get(red.getId()));
         }
     }
 
     /**
      * 认输
      */
-    public void giveup(String roomId, String userId, CommonMessage msg) {
+    public void giveup(String roomId, String userId) {
         Room room = hallService.getRoom(roomId);
-        if (room ==null) {//如果存在房间，才移除房间中的用户
-            msg.setErrmessage("null room");
+        if (room == null) {
+            log.info("null room");
             return;
         }
-        User user = room.getUserList().stream()
-                .filter(u->u.getId().equals(userId)).findFirst().orElse(null);
+        User user = hallService.getUserFromRoomById(room,userId);
         if (user == null) {
-            msg.setErrmessage("null user");
+            log.info("null user");
             return;
         }
         SquareGame game = room.getSquareGame();
         if (game != null) {
             game.giveUp(user);
-            msg.setMessage("give up");
+            log.debug("give up");
         }
     }
 
     /**
      * 离开房间
      */
-    public void leaveRoom(String roomId, String userId, CommonMessage msg){
+    public void leaveRoom(String roomId, String userId){
         Room room = hallService.getRoom(roomId);
         if (room ==null) {//如果存在房间，才移除房间中的用户
-            msg.setErrmessage("null room");
             return;
         }
-        User user = room.getUserList().stream()
-                .filter(u->u.getId().equals(userId)).findFirst().orElse(null);
-        room.getUserList().remove(user);
-        if (user == null) {
-            msg.setErrmessage("null user");
-            return;
+        User user = null;
+        User blue = room.getBlue();
+        if(blue!=null&&userId.equals(blue.getId())){
+            room.setBlue(null);
+            user = blue;
+        }
+        User red = room.getRed();
+        if(red!=null&&userId.equals(red.getId())){
+            room.setRed(null);
+            user = red;
         }
         SquareGame game = room.getSquareGame();
+        if (room.getRed()==null&&room.getBlue()==null){//如果全部都是空 删除此房间
+            hallService.removeRoom(roomId);
+        }
         if (game != null) {//game!=null说明 游戏已经开始，此玩家认输
             game.giveUp(user);
-            msg.setMessage("give up");
         }
-        try {
-            synchronized (this){
-                Session session = chatSessionMap.remove(userId);
-                if (session != null) {
+        synchronized (this){
+            Session session = chatSessionMap.remove(userId);
+            if (session != null) {
+                try {
                     session.close();
-                }
-                session = gameSessionMap.remove(userId);
-                if (session != null) {
-                    session.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            session = gameSessionMap.remove(userId);
+            if (session != null) {
+                try {
+                    session.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -192,5 +204,6 @@ public class SquareGameService {
             } catch (IOException ignore) {
             }
     }
+
 
 }

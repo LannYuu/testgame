@@ -3,6 +3,7 @@ package lzlz.boardgame.service;
 import lzlz.boardgame.constant.PlayerState;
 import lzlz.boardgame.constant.RoomState;
 import lzlz.boardgame.core.squaregame.GameSize;
+import lzlz.boardgame.core.squaregame.PlayerRole;
 import lzlz.boardgame.core.squaregame.entity.Room;
 import lzlz.boardgame.core.squaregame.entity.User;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import java.util.*;
 public class HallService {
     private static final Map<String,Room> roomMap = new HashMap<>();
 
-    private static final int ROOM_SIZE =2;
     /**
      * 从 httprequest 中创建房间
      * @return 拼接的两个Id:roomId-userId
@@ -25,10 +25,8 @@ public class HallService {
         room.setMessage(roomName);
         room.setPassword(roomPassword);
         room.setCreator(creatorName);
-        room.setState(RoomState.Initial);
         room.setCreateTime(new Date());
         room.setSize(size);
-        room.setUserList(new ArrayList<>());
         synchronized (roomMap){
             this.addRoom(room);
         }
@@ -41,7 +39,7 @@ public class HallService {
      * @param roomId 房间UUID
      * @param playerName 玩家名
      * @param userId 如果是新玩家加入输入 null
-     * @return userId对应的用户
+     * @return userId对应的用户 不存userId对应用户且房间已满返回null
      */
     public User joinRoom(String roomId, String playerName, String userId){
         if (userId == null || "".equals(userId))
@@ -49,30 +47,26 @@ public class HallService {
         Room room = this.getRoom(roomId);
         if(room ==null)
             return null;
-        boolean isNewUser = true;
-        int size = room.getUserList().size();
-        User player = null;
-        for (int i = 0; i < room.getUserList().size(); i++) {
-            User player1 = room.getUserList().get(i);
-            if(player1.getId().equals(userId)){
-                isNewUser = false;//如果ID相同说明是同一个用户
-                player = player1;
-                break;
-            }
-        }
-        synchronized (this){
-            if(isNewUser){
-                if (size<ROOM_SIZE){//如果是新用户（id不同）且房间人数未达到上线
+        User player = getUserFromRoomById(room,userId);
+        if (player == null) {
+            synchronized (this){
+                if(room.getBlue()==null){
                     player = new User();
                     player.setId(userId);
                     player.setState(PlayerState.Init);
                     player.setName(playerName);
-                    room.getUserList().add(player);
+                    player.setPlayerRole(PlayerRole.Blue);
+                    room.setBlue(player);
+                }else if(room.getRed()==null){
+                    player = new User();
+                    player.setId(userId);
+                    player.setState(PlayerState.Init);
+                    player.setName(playerName);
+                    player.setPlayerRole(PlayerRole.Red);
+                    room.setRed(player);
                 }
             }
         }
-        if(room.getUserList().size()>= ROOM_SIZE)
-            room.setState(RoomState.Full);
         return player;
     }
 
@@ -89,13 +83,31 @@ public class HallService {
     private void addRoom(Room room){
         roomMap.put(room.getId(), room);
     }
-    private void deleteRoom(String roomId){
-        roomMap.remove(roomId);
-    }
 
     public Room getRoom(String roomId){
         return roomMap.get(roomId);
     }
 
 
+    public User getUserFromRoomById(String roomId,String userId){
+        Room room = getRoom(roomId);
+        if (room != null) {
+            return getUserFromRoomById(room,userId);
+        }
+        return null;
+    }
+    public User getUserFromRoomById(Room room,String userId){
+        User blue = room.getBlue();
+        if (blue != null) {
+            if(userId.equals(blue.getId())) {
+                return blue;
+            }
+        }
+        User red = room.getRed();
+        if (red != null) {
+            if(userId.equals(red.getId()))
+                return red;
+        }
+        return null;
+    }
 }

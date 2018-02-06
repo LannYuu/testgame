@@ -93,6 +93,7 @@
         }
         #chat-content{
             overflow-y:hidden;
+            position: absolute;left:3%;top:50px;
         }
         #chat-content p{
             margin:5px 5px 0;
@@ -136,29 +137,30 @@
                 <div>
                     <div id="score" class="">
                         <div class="bg-blue score-panel">
-                            <span class="score-name" style="float:left">啛啛喳喳错啛啛喳喳错啛啛喳喳错存储</span>
-                            <span style="float:right;font-size:15px;">{{blueScore}}</span>
-                            <span style="float:right;font-size:20px;">{{blueScore}}</span>
+                            <div v-if="!blueReady&&role=='Blue'" class="layui-btn bg-blue layui-btn-sm layui-btn-fluid"
+                                    style="width:100%;height:100%">点击准备</div>
+                            <span v-if="blueReady||(!blueReady&&role!='Blue')" class="score-name" style="float:left">
+                                &nbsp;{{role=='Blue'?'[我]':blueName}}</span>
+                            <span v-if="blueReady&&redReady" style="float:right;font-size:20px;">{{blueScore}}</span>
                         </div>
                         <div class="layui-bg-gray"
                              style="text-align: center;float: left;width:6%;line-height: 30px;font-size:20px;">:</div>
                         <div class="bg-red score-panel">
-                            <span style="float:left;font-size:20px;">{{redScore}}</span>
-                            <span style="float:left;font-size:15px;">{{redScore}}</span>
-                            <span class="score-name" style="float:right">B准备</span>
+                            <div v-if="!redReady&&role=='Red'" class="layui-btn bg-blue layui-btn-sm layui-btn-fluid"
+                                 style="width:100%;height:100%">点击准备</div>
+                            <span v-if="blueReady&&redReady" style="float:left;font-size:20px;">{{redScore}}</span>
+                            <span v-if="redReady||(!redReady&&role!='Red')" class="score-name" style="float:right">
+                                {{role=='Red'?'[我]':redName}}&nbsp;</span>
                         </div>
                     </div>
-                    <!--<div class="layui-bg-gray" style="line-height: 30px;font-size:30px;text-align:center">-->
-                        <!--<span class="text-blue">{{blueScore}}</span>:<span class="text-red">{{redScore}}</span>-->
-                    <!--</div>-->
                 </div>
                 <div class="" id="chat-content">
                     <p>
-                        <span class="my-bg-green chat-head">[系统信息]:</span>
+                        <span class="layui-bg-gray chat-head">[系统信息]:</span>
                         连接游戏服务器...
                     </p>
                     <p>
-                        <span class="my-bg-green chat-head">[系统信息]:</span>
+                        <span class="layui-bg-gray chat-head">[系统信息]:</span>
                         连接聊天服务器...
                     </p>
                 </div>
@@ -175,7 +177,7 @@
     </div>
 </div>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://cdn.bootcss.com/vue/2.5.13/vue.min.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.13/vue.js"></script>
 <script src="/static/plugin/layui/layui.js"></script>
 <script src="/static/js/mysocket.js"></script>
 <!--/*调整布局*/-->
@@ -213,26 +215,8 @@
             $('#btn-send').text('发送');
         }
     });
-    var myGameSocket = new MyWebSocket(wsurl+'/socket/room/game/'+token,{
-        onerror:function () {
-            setErrorInfo("发生错误");
-        },
-        onmessage:function (event) {
-            var data = JSON.parse(event.data);
-            if(data && data.errmessage)
-                setErrorInfo(data.errmessage);
-            else{
-                exec(data);
-            }
-        },
-        onclose:function(){
-            setSystemInfo("与游戏服务器断开连接");
-        },
-        onopen:function(){
-        }
-    });
     function setSystemInfo(message){
-        setMessage("<span class=\"my-bg-green chat-head\">[系统信息]:</span> " + message);
+        setMessage("<span class=\"layui-bg-gray chat-head\">[系统信息]:</span> " + message);
     }
     function setErrorInfo(message){
         setMessage("<span class=\"my-bg-error chat-head\">[错误]: " + message+"</span>");
@@ -259,39 +243,99 @@
 </script>
 <!--/*游戏控制*/-->
 <script>
-   // var $boardItem = $('#board').find('.board-item').each(function(){
-   //     console.log($(this).hasClass('board-point'));
-   // });
-   const layout={
+    var myGameSocket = new MyWebSocket(wsurl+'/socket/room/game/'+token,{
+        onerror:function () {
+            setErrorInfo("发生错误");
+        },
+        onmessage:function (event) {
+            var data = JSON.parse(event.data);
+            switch (data.command){
+                case 'Message':
+                    setSystemInfo(data.textdata);
+                    break;
+                case 'Move':
+                    vueBoard.move(data.numdata);
+                    break;
+                case 'Ready':
+                    ready(data.textdata);
+                    break;
+                case 'GiveUp':
+                    giveup(data.textdata);
+                    break;
+                case 'Leave':
+                    leave(data.textdata);
+                    break;
+            }
+        },
+        onclose:function(){
+            setSystemInfo("与游戏服务器断开连接");
+        },
+        onopen:function(){
+        }
+    });
+    function ready(role){
+        if(role==='Red'){
+            gameData.redReady=true;
+            setSystemInfo("红色方已准备");
+        }else if(role==='Blue'){
+            gameData.blueReady=true;
+            setSystemInfo("蓝色方已准备");
+        }
+        if(gameData.blueReady&&gameData.redReady){
+            setSystemInfo("游戏即将开始");
+            var time=5;
+            var interval = setInterval(function(){
+                if(time>=1)
+                    setSystemInfo(time--);
+                else{
+                    clearInterval(interval);
+                    //start();
+                }
+            },1000)
+        }
+    }
+    function join(user){
+    }
+    function giveup(role){
+
+    }
+    function leave(role){
+
+    }
+    const layout={
        3:["8%","38%"],
        5:["4%","20%"],
        7:["3%","13%"]
-   };
-   var gameData={
-       role:'red',
-       size:5,
-       redScore:0,
-       blueScore:0,
-       state:0,
-       boardData:[0, 70, 0, 30, 0, 10, 0, 10, 0,
-           700, 7, 300, 3, 300, 1, 100, 1, 100,
-           0, 30, 0, 30, 0, 10, 0, 10, 0,
-           700, 3, 700, 7, 300, 1, 100, 1, 100,
-           0, 70, 0, 70, 0, 10, 0, 10, 0,
-           100, 1, 100, 1, 100, 1, 100, 1, 100,
-           0, 10, 0, 10, 0, 10, 0, 10, 0,
-           100, 1, 100, 1, 100, 1, 100, 1, 100,
-           0, 10, 0, 10, 0, 10, 0, 10, 0]
-   };
-   gameData.layout = layout;
-   function updateGameData(data){
+    };
+    var gameData={
+        role:'Blue',
+        size:5,
+        blueName:'ABCCCCC',
+        blueReady:false,
+        blueScore:0,
+        redName:'哈哈哈哈哈',
+        redReady:false,
+        redScore:0,
+        state:0,
+        boardData:[0, 70, 0, 30, 0, 10, 0, 10, 0,
+            700, 7, 300, 3, 300, 1, 100, 1, 100,
+            0, 30, 0, 30, 0, 10, 0, 10, 0,
+            700, 3, 700, 7, 300, 1, 100, 1, 100,
+            0, 70, 0, 70, 0, 10, 0, 10, 0,
+            100, 1, 100, 1, 100, 1, 100, 1, 100,
+            0, 10, 0, 10, 0, 10, 0, 10, 0,
+            100, 1, 100, 1, 100, 1, 100, 1, 100,
+            0, 10, 0, 10, 0, 10, 0, 10, 0]
+    };
+    gameData.layout = layout;
+    function updateGameData(data){
        for(var prop in data){
            if(data.hasOwnProperty(prop))
                gameData[prop]=data[prop];
        }
-   }
+    }
 
-   var vueBoard = new Vue({
+    var vueBoard = new Vue({
        el: '#board',
        data: gameData,
        methods:{
@@ -321,11 +365,11 @@
                $('.board-range').height(length).width(length);
            }
        }
-   });
-   var vueScore = new Vue({
+    });
+    var vueScore = new Vue({
        el: '#score',
        data: gameData
-   });
+    });
 </script>
 </body>
 </html>

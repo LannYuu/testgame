@@ -22,8 +22,10 @@ public class Room {
     GameSize size;
     @JsonIgnore
     SquareGame squareGame;
+//    @JsonIgnore
+//    RoomState state;
     @JsonIgnore
-    RoomState state;
+    User blue;
     @JsonIgnore
-    List<User> userList;
+    User red;
 }

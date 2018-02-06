@@ -1,7 +1,5 @@
 package lzlz.boardgame.controller;
 
-import lzlz.boardgame.constant.PlayerState;
-import lzlz.boardgame.core.squaregame.SquareGame;
 import lzlz.boardgame.core.squaregame.entity.Room;
 import lzlz.boardgame.entity.CommonMessage;
 import lzlz.boardgame.service.HallService;
@@ -12,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 这个controller全部不需要了
+ */
 @RestController
 @RequestMapping("game/1")
 public class SquareGameController {
@@ -40,7 +41,7 @@ public class SquareGameController {
     CommonMessage leave(@RequestParam("room-id") String roomId,
                         @RequestParam("user-id") String userId){
         CommonMessage msg = new CommonMessage();
-        gameService.leaveRoom(roomId,userId,msg);
+        gameService.leaveRoom(roomId,userId);
         return msg;
     }
 
@@ -49,7 +50,7 @@ public class SquareGameController {
     CommonMessage giveup(@RequestParam("room-id") String roomId,
                         @RequestParam("user-id") String userId){
         CommonMessage msg = new CommonMessage();
-        gameService.giveup(roomId,userId,msg);
+        gameService.giveup(roomId,userId);
         return msg;
     }
 

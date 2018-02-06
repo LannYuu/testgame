@@ -1,4 +1,5 @@
-- fastjson处理 json转枚举 需要测试以下
+- fastjson处理 json转枚举 需要测试以下  
+结论是 只要json值跟枚举名一样就可以正常转换 不区分大小写
 - squareroom.html连接gamesocket
 - 房间准备要放在socket中 不然不方便通讯
 - 进入房间后的处理顺序

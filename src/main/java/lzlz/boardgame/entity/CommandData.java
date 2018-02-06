@@ -10,4 +10,5 @@ public class CommandData {
     Command command;
     String textData;
     int numData;
+    Object data;
 }
