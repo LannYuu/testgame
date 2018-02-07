@@ -32,13 +32,23 @@ public class BoardEdge {
             return MoveResult.Fail;
         }
         this.owner = owner;
-        boolean score =false;
+        int score = 0;
         if (topOrLeft != null) {
-            score = topOrLeft.setOwner(owner);
+            if(topOrLeft.setOwner(owner))
+                score++;
         }
         if (rightOrBottom != null) {
-            score =score||rightOrBottom.setOwner(owner);
+            if(rightOrBottom.setOwner(owner))
+                score++;
         }
-        return score?MoveResult.Score:MoveResult.Pass;
+        switch (score) {
+            case 1:
+                return MoveResult.Score1;
+            case 2:
+                return MoveResult.Score2;
+            default:
+                return MoveResult.Pass;
+        }
+
     }
 }

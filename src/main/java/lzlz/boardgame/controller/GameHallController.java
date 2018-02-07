@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.print.DocFlavor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -41,6 +42,20 @@ public class GameHallController {
             String roomId = token.split("/")[0];
             Room room = hallService.getRoom(roomId);
             if (room != null) {
+                switch (room.getSize()) {
+                    case Three:
+                        mv.addObject("width","8%")
+                                .addObject("length","38%");
+                        break;
+                    case Five:
+                        mv.addObject("width","4%")
+                                .addObject("length","20%");
+                        break;
+                    case Seven:
+                        mv.addObject("width","3%")
+                                .addObject("length","13%");
+                        break;
+                }
                 mv.setViewName("/game/square");
                 return mv;
             }
@@ -88,7 +103,7 @@ public class GameHallController {
             @RequestParam(value = "room-password", required = false) String password){
         CommonMessage msg = new CommonMessage();
         HttpSession httpSession = request.getSession();
-        if(httpSession.getAttribute("gameToken")!=null){
+        if(getToken(httpSession)!=null){
             msg.setErrmessage("已在房间中");
             return msg;
         }
@@ -115,16 +130,8 @@ public class GameHallController {
                                                   @RequestParam("room-id") String roomId){
         CommonMessage msg = new CommonMessage();
         HttpSession httpSession = request.getSession();
-        String userGameToken = (String)httpSession.getAttribute("gameToken");
-        if(userGameToken!=null){
-            String userRoomId = userGameToken.split("/")[0];
-            Room room = hallService.getRoom(userRoomId);
-            if(room !=null){
-                msg.setErrmessage("已在房间中");
-                return msg;
-            }else{
-                httpSession.setAttribute("gameToken",null);
-            }
+        if(getToken(httpSession)!=null){
+            msg.setErrmessage("已在房间中");
         }
         User player = hallService.joinRoom(roomId,getPlayerName(request),null);
         if(player==null){
@@ -147,5 +154,18 @@ public class GameHallController {
         }
         return playerName.toString();
     }
-
+    //如果在hallService找不到 token对应的room就删除token返回null
+    private String getToken(HttpSession httpSession){
+        String userGameToken = (String)httpSession.getAttribute("gameToken");
+        if(userGameToken!=null){
+            String userRoomId = userGameToken.split("/")[0];
+            Room room = hallService.getRoom(userRoomId);
+            if(room !=null){
+                return userGameToken;
+            }else{
+                httpSession.setAttribute("gameToken",null);
+            }
+        }
+        return null;
+    }
 }

@@ -1,7 +1,6 @@
 package lzlz.boardgame.service;
 
 import lzlz.boardgame.constant.PlayerState;
-import lzlz.boardgame.constant.RoomState;
 import lzlz.boardgame.core.squaregame.GameSize;
 import lzlz.boardgame.core.squaregame.PlayerRole;
 import lzlz.boardgame.core.squaregame.entity.Room;

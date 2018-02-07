@@ -95,7 +95,7 @@ public class SquareGameEndPoint {
     @OnClose
     public void OnClose(Session session){
         log.debug("gamesession-"+session.getId()+"\tclose");
-        sendMessage(hallService.getUserFromRoomById(roomId,userId).getName()+"与游戏服务器断开连接");
+        boardcast(hallService.getUserFromRoomById(roomId,userId).getName()+"与游戏服务器断开连接");
     }
 
     @OnError
