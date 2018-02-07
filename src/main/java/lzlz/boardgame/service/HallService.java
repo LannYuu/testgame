@@ -31,7 +31,7 @@ public class HallService {
             this.addRoom(room);
         }
         User newUser = joinRoom(roomId,creatorName,null);
-        return roomId+"-"+newUser.getId();
+        return roomId+"/"+newUser.getId();
     }
 
     /**

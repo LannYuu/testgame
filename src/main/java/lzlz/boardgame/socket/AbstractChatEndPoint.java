@@ -21,11 +21,11 @@ public abstract class AbstractChatEndPoint implements ChatEndPoint {
     @Override @OnError
     public void onError(Session session, Throwable error) {
         log.warn("session:"+session.getId()+"发生错误");
+        error.printStackTrace();
         try {
             session.close();
         } catch (IOException ignored) {
         }
-        error.printStackTrace();
     }
 
     @Override @OnClose

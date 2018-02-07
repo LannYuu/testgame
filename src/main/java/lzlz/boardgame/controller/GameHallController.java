@@ -36,9 +36,14 @@ public class GameHallController {
     @GetMapping("/room")
     public ModelAndView room(HttpServletRequest request) {
         ModelAndView mv = new ModelAndView();
-        if(request.getSession().getAttribute("gameToken")!=null){
-            mv.setViewName("/game/room");
-            return mv;
+        String token = (String)request.getSession().getAttribute("gameToken");
+        if(token!=null){
+            String roomId = token.split("/")[0];
+            Room room = hallService.getRoom(roomId);
+            if (room != null) {
+                mv.setViewName("/game/square");
+                return mv;
+            }
         }
         mv.setViewName("redirect:/error/404");
         return mv;
@@ -76,10 +81,11 @@ public class GameHallController {
     }
 
     @PostMapping("/createroom")
-    public @ResponseBody CommonMessage createRoom(HttpServletRequest request,
-                                                  @RequestParam("room-title") String title,
-                                                  @RequestParam(value = "room-size", required = false,defaultValue = "0") int size,
-                                                  @RequestParam(value = "room-password", required = false) String password){
+    public @ResponseBody CommonMessage createRoom(
+            HttpServletRequest request,
+            @RequestParam("room-title") String title,
+            @RequestParam(value = "room-size", required = false,defaultValue = "0") int size,
+            @RequestParam(value = "room-password", required = false) String password){
         CommonMessage msg = new CommonMessage();
         HttpSession httpSession = request.getSession();
         if(httpSession.getAttribute("gameToken")!=null){
@@ -106,20 +112,26 @@ public class GameHallController {
 
     @PostMapping("/joinroom")
     public @ResponseBody CommonMessage joinRoom(HttpServletRequest request,
-                                                  @RequestParam("room-id") String roomId,
-                                                  @RequestParam(value = "room-password", required = false) String password){
+                                                  @RequestParam("room-id") String roomId){
         CommonMessage msg = new CommonMessage();
         HttpSession httpSession = request.getSession();
-        if(httpSession.getAttribute("gameToken")!=null){
-            msg.setErrmessage("已在房间中");
-            return msg;
+        String userGameToken = (String)httpSession.getAttribute("gameToken");
+        if(userGameToken!=null){
+            String userRoomId = userGameToken.split("/")[0];
+            Room room = hallService.getRoom(userRoomId);
+            if(room !=null){
+                msg.setErrmessage("已在房间中");
+                return msg;
+            }else{
+                httpSession.setAttribute("gameToken",null);
+            }
         }
         User player = hallService.joinRoom(roomId,getPlayerName(request),null);
         if(player==null){
             msg.setErrmessage("加入房间失败");
             return msg;
         }
-        String gameToken = roomId+"-"+player.getId();
+        String gameToken = roomId+"/"+player.getId();
         httpSession.setAttribute("gameToken",gameToken);
         msg.setData(gameToken);
         msg.setMessage("加入房间成功");

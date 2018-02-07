@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:v-bind="http://www.w3.org/1999/xhtml"
+      xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+    <title>room</title>
+    <link rel="stylesheet" href="/static/plugin/layui/css/layui.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+    <style>
+        #board{
+            /*background-color: #ffe795;*/
+        }
+        .board-item{
+            float:left;
+            margin: 0;
+        }
+        .board-point{
+            background:#444;
+            height:4%;
+            width:4%;
+        }
+        .board-h{
+            background:#009688;
+            height:4%;
+            width:20%;
+        }
+        .board-v{
+            background:#009688;
+            height:20%;
+            width:4%;
+        }
+        .board-h:hover,.board-v:hover{
+            background:#5FB878;
+            cursor: pointer;
+        }
+        .board-range{
+            background: #ffe795;
+            height:20%;
+            width:20%;
+        }
+        .range-red{
+            background:#FF5722;
+            opacity: .8;
+            box-shadow : 0 0 0 1px #fff;
+        }
+        .range-blue{
+            background:#1E9FFF;
+            opacity: .8;
+            box-shadow : 0 0 0 1px #fff
+        }
+        .edge-red{
+            background: #FF5722;
+        }
+        .edge-blue{
+            background: #1E9FFF;
+        }
+        .edge-red:hover{
+            background:#FF5722;
+            cursor: inherit;
+        }
+        .edge-blue:hover{
+            background:#1E9FFF;
+            cursor: inherit;
+        }
+        .text-red{
+            color: #FF5722;
+        }
+        .text-blue{
+            color: #1E9FFF;
+        }
+        .bg-red{
+            background: #FF5722;
+            color:#fff;
+        }
+        .bg-blue{
+            background: #1E9FFF;
+            color:#fff;
+        }
+        .score-panel{
+            float: left;
+            width:47%;
+            height:30px;
+            line-height: 30px;
+            font-size:14px;
+            display: inline-block;
+        }
+        .score-name{
+            overflow: hidden;
+            white-space : nowrap;/*不换行*/
+            text-overflow:ellipsis;/*隐藏内容前加上省略号*/
+            max-width:70%;
+        }
+        #chat-content{
+            overflow-y:hidden;
+            position: absolute;left:3%;top:50px;
+        }
+        #chat-content p{
+            margin:5px 5px 0;
+            font-size:14px;
+        }
+        #chat-content p .chat-head{
+            margin-left:-5px;
+        }
+        #chat-content pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size:14px;
+        }
+    </style>
+</head>
+<body class="layui-bg-cyan my-body-fix-top my-scroll">
+<ul class="layui-nav layui-bg-green my-nav-fix-top">
+    <li class="layui-nav-item"><a><img height="40" src="/static/img/favicon.png"/></a></li>
+    <li class="layui-nav-item"><a href="/game/hall">大厅</a></li>
+    <li class="layui-nav-item layui-this"><a>房间</a></li>
+    <li class="layui-nav-item" style="float:right">
+        <button class="layui-btn layui-btn-warm layui-btn-sm" onclick="sendLeave()">
+            <i class="layui-icon">&#x1007;</i>退出房间
+        </button>
+    </li>
+</ul>
+<div class="layui-container" style="margin-top: 10px;">
+    <div class="layui-row">
+        <div id="board" class="layui-col-xs12 layui-col-sm7 layui-col-md8 layui-col-lg7" >
+            <div v-if="!boardData||boardData.length===0"
+                 style="width:100%;line-height: 200px;height:100%;background: #ffe795;color:black;text-align: center">
+                未开始11
+            </div>
+            <div v-for="(value,index) in boardData" class="board-item" v-bind:data="index+'-'+value"
+                 v-bind:class="{'board-point':value==0,'board-range':value>=1&&value<10,
+                 'board-h':value>=10&&value<100,'board-v':value>=100,
+                 'edge-blue':value>=10&&value%3==0,'edge-red':value>=10&&value%7==0,
+                 'range-blue':value<10&&value>0&&value%3==0,'range-red':value<10&&value>0&&value%7==0}"
+                 v-on:click="move(index)"
+            ></div>
+        </div>
+        <div class="layui-col-xs12 layui-col-sm5 layui-col-md4 layui-col-lg5"
+         id="chat-wrap">
+            <div id="chat" class="layui-bg-green" style="margin:0 5px 0 40px;padding:10px;height: 100%;position: relative;">
+                <div>
+                    <div id="score" class="">
+                        <div class="bg-blue score-panel">
+                            <div v-if="!blueReady&&role=='Blue'" class="layui-btn bg-blue layui-btn-sm layui-btn-fluid"
+                                    style="width:100%;height:100%" v-on:click="ready()">点击准备</div>
+                            <span v-if="blueReady||(!blueReady&&role!='Blue')" class="score-name" style="float:left">
+                                &nbsp;{{role=='Blue'?'[我]':blueName}}</span>
+                            <span v-if="blueReady&&redReady" style="float:right;font-size:20px;">{{blueScore}}</span>
+                        </div>
+                        <div class="layui-bg-gray"
+                             style="text-align: center;float: left;width:6%;line-height: 30px;font-size:20px;">:</div>
+                        <div class="bg-red score-panel">
+                            <div v-if="!redReady&&role=='Red'" class="layui-btn bg-red layui-btn-sm layui-btn-fluid"
+                                 style="width:100%;height:100%" v-on:click="ready()">点击准备</div>
+                            <span v-if="blueReady&&redReady" style="float:left;font-size:20px;">{{redScore}}</span>
+                            <span v-if="redReady||(!redReady&&role!='Red')" class="score-name" style="float:right">
+                                {{role=='Red'?'[我]':redName}}&nbsp;</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="" id="chat-content">
+                    <!--<p>-->
+                        <!--<span class="layui-bg-gray chat-head">[系统信息]:</span>-->
+                        <!--连接游戏服务器...-->
+                    <!--</p>-->
+                    <!--<p>-->
+                        <!--<span class="layui-bg-gray chat-head">[系统信息]:</span>-->
+                        <!--连接聊天服务器...-->
+                    <!--</p>-->
+                </div>
+                <div style="width:95%;position: absolute;left:3%;bottom:40px;">
+                    <div class="layui-input-inline" style="width:70%;">
+                        <input id="input-message" type="text" placeholder="回车发送消息" title="回车发送消息"
+                               class="layui-input my-input-sm"/>
+                    </div>
+                    <button class="layui-btn layui-btn-primary layui-btn-sm"
+                            id="btn-send" style="width:25%">发送</button>
+                </div>
+                <button class="layui-btn layui-btn-danger" style="width:100%;position: absolute;left:0;bottom:0px;">
+                    认输
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.13/vue.js"></script>
+<script src="/static/plugin/layui/layui.js"></script>
+<script src="/static/js/mysocket.js"></script>
+<!--/*调整布局*/-->
+<script >
+    // var height =Math.min(window.innerHeight-90,window.innerWidth-30) ;
+    var $board = $('#board');
+    $board.height($board.width());
+    $('#chat').height($board.height()-20);
+    $('#chat-content').height($board.height()-120)
+        .bind('DOMNodeInserted', function() {
+            this.scrollTop = this.scrollHeight;
+            var $this = $(this);
+            if(1.5*$this.height()<this.scrollHeight){
+                $this.find("p").eq(0).remove();
+            }
+        });
+
+</script>
+<!--/*thymeleaf定义常量*/-->
+<script th:inline="text">
+    const token = '[[${session.gameToken}]]';
+    const layout={
+        3:["8%","38%"],
+        5:["4%","20%"],
+        7:["3%","13%"]
+    };
+    const gameData={
+        role:'',
+        size:0,
+        blueName:'',
+        blueReady:false,
+        blueScore:0,
+        redName:'',
+        redReady:false,
+        redScore:0,
+        state:0,
+        boardData:[]
+        // boardData:[0, 70, 0, 30, 0, 10, 0, 10, 0,
+        //     700, 7, 300, 3, 300, 1, 100, 1, 100,
+        //     0, 30, 0, 30, 0, 10, 0, 10, 0,
+        //     700, 3, 700, 7, 300, 1, 100, 1, 100,
+        //     0, 70, 0, 70, 0, 10, 0, 10, 0,
+        //     100, 1, 100, 1, 100, 1, 100, 1, 100,
+        //     0, 10, 0, 10, 0, 10, 0, 10, 0,
+        //     100, 1, 100, 1, 100, 1, 100, 1, 100,
+        //     0, 10, 0, 10, 0, 10, 0, 10, 0]
+    };
+    gameData.layout = layout;
+</script>
+<!--/*websocket*/-->
+<script>
+    var wsurl = document.URL.match(/^https?:\/\/[^\/]+/)[0].replace(/^https?/,"ws");
+    var myChatSocket = new MyWebSocket(wsurl+'/socket/room/chat/'+token,{
+        onerror:function () {
+            setErrorInfo("发生错误");
+        },
+        onmessage:function (event) {
+            setMessage(event.data);
+        },
+        onclose:function(){
+            setSystemInfo("与聊天服务器断开连接");
+            $('#btn-send').text('重新连接');
+        },
+        onopen:function(){
+            $('#btn-send').text('发送');
+        }
+    });
+    function setSystemInfo(message){
+        setMessage("<span class=\"layui-bg-gray chat-head\">[系统信息]:</span> " + message);
+    }
+    function setSpecialInfo(message){
+        setMessage("<span class=\"layui-bg-danger chat-head\">[系统信息]:</span> " + message);
+    }
+    function setErrorInfo(message){
+        setMessage("<span class=\"my-bg-error chat-head\">[错误]: " + message+"</span>");
+    }
+    function setMessage(message) {
+        $('#chat-content').append('<p>'+message+'</p>');
+    }
+    var $message = $("#input-message").keypress(function(e) {
+        // 回车键事件
+        if(e.which === 13) {
+            $('#btn-send').click();
+        }
+    });
+    //发送消息
+    $('#btn-send').click(function(){
+        //
+        if(myChatSocket.websocket.readyState===WebSocket.CLOSED){
+            myChatSocket.reconnect();
+        }else if(myChatSocket.websocket.readyState===WebSocket.OPEN){
+            myChatSocket.send($message.val());
+            $message.val(null);
+        }
+    });
+</script>
+<!--/*游戏控制*/-->
+<script>
+    function updateGameData(data){
+        if(gameData.role)//不重复更新role 因为每次初始化的玩家可能会不同
+            data.role = null;
+        for(var prop in data){
+            if(data.hasOwnProperty(prop)){
+                if(prop==='boardData'){
+                    vueBoard.update(data[prop]);
+                }else if(data[prop])
+                    gameData[prop]=data[prop];
+            }
+        }
+    }
+    var myGameSocket = new MyWebSocket(wsurl+'/socket/room/game/'+token,{
+        onerror:function () {
+            setSpecialInfo("发生错误");
+        },
+        onmessage:function (event) {
+            console.log(event.data);
+            var commandData = JSON.parse(event.data);
+            switch (commandData.command){
+                case 'Join':
+                    setSystemInfo(commandData.textData+" 连接服务器");
+                    updateGameData(commandData.data);
+                    break;
+                case 'Init':
+                    updateGameData(commandData.data);
+                    break;
+                case 'Message':
+                    setSystemInfo(commandData.textData);
+                    break;
+                case 'Move':
+                    updateGameData(commandData.data);
+                    break;
+                case 'Ready':
+                    updateGameData(commandData.data);
+                    ready(commandData.textData);
+                    break;
+                case 'GiveUp':
+                    updateGameData(commandData.data);
+                    alert(commandData.textData+"认输！");
+                    break;
+                case 'Leave':
+                    leave(commandData.textData);
+                    break;
+            }
+        },
+        onclose:function(){
+            setSystemInfo("与游戏服务器断开连接");
+        },
+        onopen:function(){
+            myGameSocket.send(JSON.stringify({command:'Data'}))//初始化数据
+        }
+    });
+    function ready(role){
+        if(role==='Red'){
+            gameData.redReady=true;
+            setSpecialInfo("红色方已准备");
+        }else if(role==='Blue'){
+            gameData.blueReady=true;
+            setSpecialInfo("蓝色方已准备");
+        }
+        if(gameData.state==='Start'){
+            setSpecialInfo("游戏开始");
+        }
+    }
+
+    function sendGiveup(){
+        myGameSocket.send(JSON.stringify({command:'GiveUp'}))
+    }
+    function giveup(role){
+
+    }
+    function sendLeave(){
+        if(myGameSocket){
+            myGameSocket.send(JSON.stringify({command:'Leave'}))
+        }else{
+            $.post('game/1/leave/'+token,function(){
+                window.location.href='game/hall';
+            })
+        }
+    }
+    function leave(role){
+        if(role===gameData.role)
+            window.location.href='game/hall';
+        else
+            setSystemInfo(role+" 退出了游戏");
+    }
+
+    var vueBoard = new Vue({
+       el: '#board',
+       data: gameData,
+       methods:{
+           update:function(data){
+               for(var i=0;i<data.length;i++){
+                   if(data[i]!==this.boardData[i])
+                       this.$set(this.boardData,i,data[i]);
+               }
+           },
+           move:function(index){
+               var value = this.boardData[index];
+               if(!(value===10||value===100))
+                   return;
+               console.log(index+'-'+value);
+               if(this.state==='Start')
+               myGameSocket.send(JSON.stringify({command:'Move',numData:index}));
+           },
+           initCss:function(size){
+               var width = this.layout[size][0];
+               var length = this.layout[size][1];
+               $('.board-point').height(width).width(width);
+               $('.board-h').height(width).width(length);
+               $('.board-v').height(length).width(width);
+               $('.board-range').height(length).width(length);
+           }
+       }
+    });
+    var vueScore = new Vue({
+        el: '#score',
+        data: gameData,
+        methods:{
+            ready:function(){
+                myGameSocket.send(JSON.stringify({command:'Ready'}))
+            }
+        }
+    });
+</script>
+</body>
+</html>

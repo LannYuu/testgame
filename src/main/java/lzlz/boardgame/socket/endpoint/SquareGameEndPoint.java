@@ -69,14 +69,16 @@ public class SquareGameEndPoint {
         }
     }
     @OnMessage
-    public void onMessage(String message){
+    public void onMessage(String message,Session session){
         CommandData command = JSON.parseObject(message,CommandData.class);
         switch (command.getCommand()) {
             case Message:
-                this.sendMessage(command.getTextData());
                 break;
             case Move:
                 this.move(command.getNumData());
+                break;
+            case Data:
+                getData(session);
                 break;
             case Ready:
                 this.ready();
@@ -148,15 +150,28 @@ public class SquareGameEndPoint {
             boardcast(JSON.toJSONString(cmd));
             return;
         }
+        CommandData commandData = new CommandData();
+        commandData.setCommand(Command.Move);
         SquareGameData data = room.getSquareGame().getSquareGameData();
-        boardcast(JSON.toJSONString(data));
+        commandData.setData(data);
+        boardcast(JSON.toJSONString(commandData));
     }
 
-    //认输
+    private void getData(Session session){
+        SquareGameData data = squareGameService.fullData(hallService.getRoom(roomId),hallService.getUserFromRoomById(roomId, userId));
+        try {
+            session.getBasicRemote().sendText(JSON.toJSONString(data));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //加入游戏服务器
     private void join() {
         CommandData commandData = new CommandData();
         commandData.setCommand(Command.Join);
         commandData.setTextData(userName);
+        commandData.setData(squareGameService.fullData(roomId,userId));
         boardcast(JSON.toJSONString(commandData));
     }
 
@@ -166,23 +181,24 @@ public class SquareGameEndPoint {
         CommandData commandData = new CommandData();
         commandData.setCommand(Command.GiveUp);
         commandData.setTextData(hallService.getUserFromRoomById(roomId,userId).getPlayerRole().toString());
+        commandData.setData(squareGameService.fullData(roomId,userId));
         boardcast(JSON.toJSONString(commandData));
     }
 
     private void ready(){
         Room room = hallService.getRoom(this.roomId);
-        boolean isStarted = squareGameService.ready(room,this.userId);
-        if(isStarted){
-            SquareGameData data = room.getSquareGame().getSquareGameData();
-            boardcast(JSON.toJSONString(data));
-        }
+        squareGameService.ready(room,this.userId);
+        CommandData commandData = new CommandData();
+        commandData.setCommand(Command.Ready);
+        commandData.setData(squareGameService.fullData(room,hallService.getUserFromRoomById(room,this.userId)));
+        boardcast(JSON.toJSONString(commandData));
 
     }
     private void leave(){
         squareGameService.leaveRoom(this.roomId,this.userId);
         CommandData commandData = new CommandData();
         commandData.setCommand(Command.Leave);
-        commandData.setTextData(hallService.getUserFromRoomById(roomId,userId).getPlayerRole().toString());
+        commandData.setTextData(userName);
         boardcast(JSON.toJSONString(commandData));
     }
 

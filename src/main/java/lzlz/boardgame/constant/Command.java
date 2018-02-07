@@ -9,6 +9,10 @@ public enum Command {
      */
     Fail,
     /**
+     * 数据
+     */
+    Data,
+    /**
      * 文本消息
      */
     Message,

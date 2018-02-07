@@ -2,9 +2,10 @@ package lzlz.boardgame.service;
 
 import lombok.extern.slf4j.Slf4j;
 import lzlz.boardgame.constant.PlayerState;
-import lzlz.boardgame.constant.RoomState;
+import lzlz.boardgame.core.squaregame.PlayerRole;
 import lzlz.boardgame.core.squaregame.SquareGame;
 import lzlz.boardgame.core.squaregame.entity.Room;
+import lzlz.boardgame.core.squaregame.entity.SquareGameData;
 import lzlz.boardgame.core.squaregame.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,48 @@ public class SquareGameService {
         }
         return false;
     }
+    /*前端 gameData
+        role:'Blue',
+        size:5,
+        blueName:'ABCCCCC',
+        blueReady:false,
+        blueScore:0,
+        redName:'哈哈哈哈哈',
+        redReady:false,
+        redScore:0,
+        state:0,
+        boardData:[]
+         */
+    public SquareGameData fullData(String roomId ,String userId){
+        return fullData(hallService.getRoom(roomId),hallService.getUserFromRoomById(roomId,userId));
+    }
+    public SquareGameData fullData(Room room ,User user){
+        SquareGameData data;
+        if (room.getSquareGame() != null) {
+            data = room.getSquareGame().getSquareGameData();
+        }else{
+            data = new SquareGameData();
+
+        }
+        data.setSize(room.getSize().getValue());
+        User blue = room.getBlue();
+        if(blue!=null){
+            if(blue.equals(user)){
+                data.setRole(PlayerRole.Blue);
+            }
+            data.setBlueName(blue.getName());
+            data.setBlueReady(PlayerState.Ready.equals(blue.getState()));
+        }
+        User red = room.getRed();
+        if(red!=null){
+            if(red.equals(user)){
+                data.setRole(PlayerRole.Red);
+            }
+            data.setRedName(red.getName());
+            data.setRedReady(PlayerState.Ready.equals(red.getState()));
+        }
+        return data;
+    }
     private void startGame(Room room,User blue,User red){
         SquareGame game = new SquareGame(room.getSize(),blue,red);
         room.setSquareGame(game);
@@ -93,12 +136,7 @@ public class SquareGameService {
      */
     public void forEachChatSession(String roomId, Consumer<Session> consumer){
         Room room = hallService.getRoom(roomId);
-        User blue = room.getBlue();
-        User red = room.getRed();
-        synchronized (chatSessionMap) {
-            consumer.accept(chatSessionMap.get(blue.getId()));
-            consumer.accept(chatSessionMap.get(red.getId()));
-        }
+        forEachSession(chatSessionMap,room,consumer);
     }
 
     /**
@@ -106,14 +144,28 @@ public class SquareGameService {
      * @param consumer 对session的操作
      */
     public void forEachGameSession(Room room, Consumer<Session> consumer){
-        User blue = room.getBlue();
-        User red = room.getRed();
-        synchronized (gameSessionMap) {
-            consumer.accept(gameSessionMap.get(blue.getId()));
-            consumer.accept(gameSessionMap.get(red.getId()));
-        }
+        forEachSession(gameSessionMap,room,consumer);
     }
 
+    private void forEachSession(Map<String,Session> sessionMap,Room room, Consumer<Session> consumer){
+        User blue = room.getBlue();
+        User red = room.getRed();
+        synchronized (this) {
+            Session session;
+            if (blue != null) {
+                session = sessionMap.get(blue.getId());
+                if (session != null) {
+                    consumer.accept(session);
+                }
+            }
+            if (red != null) {
+                session = sessionMap.get(red.getId());
+                if (session != null) {
+                    consumer.accept(session);
+                }
+            }
+        }
+    }
     /**
      * 认输
      */
