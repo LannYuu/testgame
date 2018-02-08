@@ -7,61 +7,10 @@
     <title>room</title>
     <link rel="stylesheet" href="/static/plugin/layui/css/layui.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/board.css"/>
     <style>
         #board{
             /*background-color: #ffe795;*/
-        }
-        .board-item{
-            float:left;
-            margin: 0;
-        }
-        .board-point{
-            background:#444;
-            height:4%;
-            width:4%;
-        }
-        .board-h{
-            background:#009688;
-            height:4%;
-            width:20%;
-        }
-        .board-v{
-            background:#009688;
-            height:20%;
-            width:4%;
-        }
-        .board-h:hover,.board-v:hover{
-            background:#5FB878;
-            cursor: pointer;
-        }
-        .board-range{
-            background: #ffe795;
-            height:20%;
-            width:20%;
-        }
-        .range-red{
-            background:#FF5722;
-            opacity: .8;
-            box-shadow : 0 0 0 1px #fff;
-        }
-        .range-blue{
-            background:#1E9FFF;
-            opacity: .8;
-            box-shadow : 0 0 0 1px #fff
-        }
-        .edge-red{
-            background: #FF5722;
-        }
-        .edge-blue{
-            background: #1E9FFF;
-        }
-        .edge-red:hover{
-            background:#FF5722;
-            cursor: inherit;
-        }
-        .edge-blue:hover{
-            background:#1E9FFF;
-            cursor: inherit;
         }
         .text-red{
             color: #FF5722;
@@ -125,11 +74,22 @@
         <div id="board" class="layui-col-xs12 layui-col-sm7 layui-col-md8 layui-col-lg7" >
             <div v-if="!boardData||boardData.length===0"
                  style="width:100%;line-height: 200px;height:100%;background: #ffe795;color:black;text-align: center">
-                未开始11
+                未开始
             </div>
             <div v-for="(value,index) in boardData" class="board-item" v-bind:data="index+'-'+value"
-                 v-bind:class="{'board-point':value==0,'board-range':value>=1&&value<10,
-                 'board-h':value>=10&&value<100,'board-v':value>=100,
+                 v-bind:class="{
+                 'board-point-3':size==3&&value==0,
+                 'board-point-5':size==5&&value==0,
+                 'board-point-7':size==7&&value==0,
+                 'board-range-3':size==3&&value>=1&&value<10,
+                 'board-range-5':size==5&&value>=1&&value<10,
+                 'board-range-7':size==7&&value>=1&&value<10,
+                 'board-h-3':size==3&&value>=10&&value<100,
+                 'board-h-5':size==5&&value>=10&&value<100,
+                 'board-h-7':size==7&&value>=10&&value<100,
+                 'board-v-3':value>=100,
+                 'board-v-3':value>=100,
+                 'board-v-3':value>=100,
                  'edge-blue':value>=10&&value%3==0,'edge-red':value>=10&&value%7==0,
                  'range-blue':value<10&&value>0&&value%3==0,'range-red':value<10&&value>0&&value%7==0}"
                  v-on:click="move(index)"
@@ -176,7 +136,7 @@
                     <button class="layui-btn layui-btn-primary layui-btn-sm"
                             id="btn-send" style="width:25%">发送</button>
                 </div>
-                <button class="layui-btn layui-btn-danger" style="width:100%;position: absolute;left:0;bottom:0px;">
+                <button class="layui-btn layui-btn-danger" style="width:100%;position: absolute;left:0;bottom:0;">
                     认输
                 </button>
             </div>
@@ -307,7 +267,12 @@
                     setSystemInfo(commandData.textData+" 连接服务器");
                     updateGameData(commandData.data);
                     break;
-                case 'Init':
+                case 'Data':
+                    var size = commandData.data.size;
+                    gameData.rangeClass='board-range-'+size;
+                    gameData.vClass='board-v-'+size;
+                    gameData.hClass='board-h-'+size;
+                    gameData.pointClass='board-point-'+size;
                     updateGameData(commandData.data);
                     break;
                 case 'Message':
@@ -357,7 +322,8 @@
     }
     function sendLeave(){
         if(myGameSocket){
-            myGameSocket.send(JSON.stringify({command:'Leave'}))
+            myGameSocket.send(JSON.stringify({command:'Leave'}));
+            window.location.href='game/hall';
         }else{
             $.post('game/1/leave/'+token,function(){
                 window.location.href='game/hall';
@@ -390,12 +356,6 @@
                myGameSocket.send(JSON.stringify({command:'Move',numData:index}));
            },
            initCss:function(size){
-               var width = this.layout[size][0];
-               var length = this.layout[size][1];
-               $('.board-point').height(width).width(width);
-               $('.board-h').height(width).width(length);
-               $('.board-v').height(length).width(width);
-               $('.board-range').height(length).width(length);
            }
        }
     });
