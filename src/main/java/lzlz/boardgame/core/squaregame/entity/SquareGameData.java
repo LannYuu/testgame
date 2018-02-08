@@ -19,6 +19,7 @@ import lzlz.boardgame.core.squaregame.PlayerRole;
 @Data
 public class SquareGameData {
     PlayerRole role;
+    PlayerRole active;
     int size;
     String blueName;
     boolean blueReady;

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.print.DocFlavor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -32,30 +31,17 @@ public class GameHallController {
     @GetMapping("/hall")
     public ModelAndView hall(HttpServletRequest request) {
         request.getSession().setAttribute("playerName",getPlayerName(request));
-        return new ModelAndView("game/hall");
+        return new ModelAndView("game/hall")
+                .addObject("token",getToken(request.getSession()));
     }
     @GetMapping("/room")
     public ModelAndView room(HttpServletRequest request) {
         ModelAndView mv = new ModelAndView();
-        String token = (String)request.getSession().getAttribute("gameToken");
+        String token = getToken(request.getSession());
         if(token!=null){
             String roomId = token.split("/")[0];
             Room room = hallService.getRoom(roomId);
             if (room != null) {
-                switch (room.getSize()) {
-                    case Three:
-                        mv.addObject("width","8%")
-                                .addObject("length","38%");
-                        break;
-                    case Five:
-                        mv.addObject("width","4%")
-                                .addObject("length","20%");
-                        break;
-                    case Seven:
-                        mv.addObject("width","3%")
-                                .addObject("length","13%");
-                        break;
-                }
                 mv.setViewName("/game/square");
                 return mv;
             }
@@ -158,13 +144,17 @@ public class GameHallController {
     private String getToken(HttpSession httpSession){
         String userGameToken = (String)httpSession.getAttribute("gameToken");
         if(userGameToken!=null){
-            String userRoomId = userGameToken.split("/")[0];
+            String[] s =userGameToken.split("/");
+            String userRoomId = s[0];
+            String userId = s[1];
             Room room = hallService.getRoom(userRoomId);
             if(room !=null){
-                return userGameToken;
-            }else{
-                httpSession.setAttribute("gameToken",null);
+                if (hallService.getUserFromRoomById(room, userId) != null) {
+                    return userGameToken;
+                }
             }
+            httpSession.setAttribute("gameToken",null);
+
         }
         return null;
     }

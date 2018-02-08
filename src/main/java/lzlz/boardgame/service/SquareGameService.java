@@ -206,10 +206,10 @@ public class SquareGameService {
             room.setRed(null);
             user = red;
         }
-        SquareGame game = room.getSquareGame();
         if (room.getRed()==null&&room.getBlue()==null){//如果全部都是空 删除此房间
             hallService.removeRoom(roomId);
         }
+        SquareGame game = room.getSquareGame();
         if (game != null) {//game!=null说明 游戏已经开始，此玩家认输
             game.giveUp(user);
         }
@@ -218,16 +218,14 @@ public class SquareGameService {
             if (session != null) {
                 try {
                     session.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (IOException ignored) {
                 }
             }
             session = gameSessionMap.remove(userId);
             if (session != null) {
                 try {
                     session.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (IOException ignored) {
                 }
             }
         }

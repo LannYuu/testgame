@@ -104,6 +104,7 @@ public class SquareGame implements Game{
             this.data = new SquareGameData();
 
         }
+        this.data.setActive(this.active.getPlayerRole());
         this.data.setBlueScore(this.blue.getScore());
         this.data.setRedScore(this.red.getScore());
         this.data.setBoardData(this.getBoard().getBoardData());

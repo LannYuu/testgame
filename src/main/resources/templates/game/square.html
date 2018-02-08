@@ -317,10 +317,10 @@
     function sendLeave(){
         if(myGameSocket){
             myGameSocket.send(JSON.stringify({command:'Leave'}));
-            window.location.href='game/hall';
+            window.location.href='/game/hall';
         }else{
-            $.post('game/1/leave/'+token,function(){
-                window.location.href='game/hall';
+            $.post('/game/1/leave/'+token,function(){
+                window.location.href='/game/hall';
             })
         }
     }
@@ -348,8 +348,6 @@
                console.log(index+'-'+value);
                if(this.state==='Start')
                myGameSocket.send(JSON.stringify({command:'Move',numData:index}));
-           },
-           initCss:function(size){
            }
        }
     });

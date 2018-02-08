@@ -50,7 +50,7 @@
 <ul class="layui-nav layui-bg-green my-nav-fix-top">
     <li class="layui-nav-item"><a><img height="40" src="/static/img/favicon.png"/></a></li>
     <li class="layui-nav-item layui-this"><a href="#">大厅</a></li>
-    <li class="layui-nav-item" th:if="${session.gameToken}"><a th:href="@{/game/room}">房间</a></li>
+    <li class="layui-nav-item" th:if="${token}"><a th:href="@{/game/room}">房间</a></li>
 </ul>
 <div class="layui-container" style="margin-top:10px;">
     <div class="layui-row">

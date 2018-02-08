@@ -1,0 +1,99 @@
+.board-item{
+    float:left;
+    margin: 0;
+}
+.board-point-3{
+    background:#444;
+    height:8%;
+    width:8%;
+}
+.board-point-5{
+    background:#444;
+    height:4%;
+    width:4%;
+}
+.board-point-7{
+    background:#444;
+    height:3%;
+    width:3%;
+}
+
+.board-h-3{
+    background:#009688;
+    height:8%;
+    width:38%;
+}
+.board-h-5{
+    background:#009688;
+    height:4%;
+    width:20%;
+}
+.board-h-7{
+    background:#009688;
+    height:3%;
+    width:13%;
+}
+.board-v-3{
+    background:#009688;
+    height:38%;
+    width:8%;
+}
+.board-v-5{
+    background:#009688;
+    height:20%;
+    width:4%;
+}
+.board-v-7{
+    background:#009688;
+    height:13%;
+    width:3%;
+}
+.board-h-3:hover,
+.board-h-5:hover,
+.board-h-7:hover,
+.board-v-3:hover,
+.board-v-5:hover,
+.board-v-7:hover
+{
+    background:#5FB878;
+    cursor: pointer;
+}
+.board-range-3{
+    background: #ffe795;
+    height:38%;
+    width:38%;
+}
+.board-range-5{
+    background: #ffe795;
+    height:20%;
+    width:20%;
+}
+.board-range-7{
+    background: #ffe795;
+    height:13%;
+    width:13%;
+}
+.range-red{
+    background:#FF5722;
+    opacity: .8;
+    box-shadow : 0 0 0 1px #fff;
+}
+.range-blue{
+    background:#1E9FFF;
+    opacity: .8;
+    box-shadow : 0 0 0 1px #fff
+}
+.edge-red{
+    background: #FF5722;
+}
+.edge-blue{
+    background: #1E9FFF;
+}
+.edge-red:hover{
+    background:#FF5722;
+    cursor: inherit;
+}
+.edge-blue:hover{
+    background:#1E9FFF;
+    cursor: inherit;
+}

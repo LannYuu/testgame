@@ -277,11 +277,6 @@
    // var $boardItem = $('#board').find('.board-item').each(function(){
    //     console.log($(this).hasClass('board-point'));
    // });
-   const layout={
-       3:["8%","38%"],
-       5:["4%","20%"],
-       7:["3%","13%"]
-   };
    var gameData={
        role:'red',
        size:5,
@@ -300,7 +295,6 @@
            0, 10, 0, 10, 0, 10, 0, 10, 0
        ]
    };
-   gameData.layout = layout[gameData.size];
    new Vue({
        el: '#board',
        data: gameData,
