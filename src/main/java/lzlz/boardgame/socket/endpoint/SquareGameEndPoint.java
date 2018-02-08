@@ -159,8 +159,11 @@ public class SquareGameEndPoint {
 
     private void getData(Session session){
         SquareGameData data = squareGameService.fullData(hallService.getRoom(roomId),hallService.getUserFromRoomById(roomId, userId));
+        CommandData commandData = new CommandData();
+        commandData.setCommand(Command.Data);
+        commandData.setData(data);
         try {
-            session.getBasicRemote().sendText(JSON.toJSONString(data));
+            session.getBasicRemote().sendText(JSON.toJSONString(commandData));
         } catch (IOException e) {
             e.printStackTrace();
         }
