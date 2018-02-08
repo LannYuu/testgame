@@ -68,7 +68,7 @@ public class SquareGame implements Game{
         MoveResult result = getBoard().move(role,index);
         if(result==MoveResult.Pass){
             exchangePlayer();
-        }else if(result==MoveResult.Score){
+        }else if(result==MoveResult.Score1||result==MoveResult.Score2){
             log.debug(role+"\t得分");
             changeScore(role);
             User winner = CheckWin();

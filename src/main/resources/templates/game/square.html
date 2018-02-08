@@ -182,15 +182,7 @@
         redScore:0,
         state:0,
         boardData:[]
-        // boardData:[0, 70, 0, 30, 0, 10, 0, 10, 0,
-        //     700, 7, 300, 3, 300, 1, 100, 1, 100,
-        //     0, 30, 0, 30, 0, 10, 0, 10, 0,
-        //     700, 3, 700, 7, 300, 1, 100, 1, 100,
-        //     0, 70, 0, 70, 0, 10, 0, 10, 0,
-        //     100, 1, 100, 1, 100, 1, 100, 1, 100,
-        //     0, 10, 0, 10, 0, 10, 0, 10, 0,
-        //     100, 1, 100, 1, 100, 1, 100, 1, 100,
-        //     0, 10, 0, 10, 0, 10, 0, 10, 0]
+        // boardData:[0, 70, 0, 10, 0]
     };
     gameData.layout = layout;
 </script>
@@ -250,6 +242,8 @@
             if(data.hasOwnProperty(prop)){
                 if(prop==='boardData'){
                     vueBoard.update(data[prop]);
+                    if(data.size)
+                        vueBoard.initCss(data.size);
                 }else if(data[prop])
                     gameData[prop]=data[prop];
             }
