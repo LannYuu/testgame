@@ -148,6 +148,9 @@ public class SquareGameService {
     }
 
     private void forEachSession(Map<String,Session> sessionMap,Room room, Consumer<Session> consumer){
+        if (room == null) {
+            return;
+        }
         User blue = room.getBlue();
         User red = room.getRed();
         synchronized (this) {
@@ -195,39 +198,43 @@ public class SquareGameService {
         if (room ==null) {//如果存在房间，才移除房间中的用户
             return;
         }
-        User user = null;
+        User player = null;
         User blue = room.getBlue();
         if(blue!=null&&userId.equals(blue.getId())){
             room.setBlue(null);
-            user = blue;
+            player = blue;
+            player.setRoomId(null);
         }
         User red = room.getRed();
         if(red!=null&&userId.equals(red.getId())){
             room.setRed(null);
-            user = red;
+            player = red;
+            player.setRoomId(null);
         }
         if (room.getRed()==null&&room.getBlue()==null){//如果全部都是空 删除此房间
             hallService.removeRoom(roomId);
         }
         SquareGame game = room.getSquareGame();
         if (game != null) {//game!=null说明 游戏已经开始，此玩家认输
-            game.giveUp(user);
+            game.giveUp(player);
         }
         synchronized (this){
-            Session session = chatSessionMap.remove(userId);
-            if (session != null) {
-                try {
-                    session.close();
-                } catch (IOException ignored) {
-                }
-            }
-            session = gameSessionMap.remove(userId);
-            if (session != null) {
-                try {
-                    session.close();
-                } catch (IOException ignored) {
-                }
-            }
+            chatSessionMap.remove(userId);
+            gameSessionMap.remove(userId);
+//            Session session = chatSessionMap.remove(userId);
+//            if (session != null&&session.isOpen()) {
+//                try {
+//                    session.close();
+//                } catch (Exception ignored) {
+//                }
+//            }
+//            session = gameSessionMap.remove(userId);
+//            if (session != null&&session.isOpen()) {
+//                try {
+//                    session.close();
+//                } catch (Exception ignored) {
+//                }
+//            }
         }
     }
 
@@ -235,12 +242,12 @@ public class SquareGameService {
         Session session;
         synchronized (chatSessionMap){
             session = chatSessionMap.remove(userId);
+            if(session!=null&&session.isOpen())
+                try {
+                    session.close();
+                } catch (IOException ignore) {
+                }
         }
-        if(session!=null)
-            try {
-                session.close();
-            } catch (IOException ignore) {
-            }
     }
 
     public void removeGameSession(String userId){
@@ -248,7 +255,7 @@ public class SquareGameService {
         synchronized (gameSessionMap){
             session =  gameSessionMap.remove(userId);
         }
-        if(session!=null)
+        if(session!=null&&session.isOpen())
             try {
                 session.close();
             } catch (IOException ignore) {

@@ -50,7 +50,7 @@
 <ul class="layui-nav layui-bg-green my-nav-fix-top">
     <li class="layui-nav-item"><a><img height="40" src="/static/img/favicon.png"/></a></li>
     <li class="layui-nav-item layui-this"><a href="#">大厅</a></li>
-    <li class="layui-nav-item" th:if="${token}"><a th:href="@{/game/room}">房间</a></li>
+    <li class="layui-nav-item" th:if="${session.player.roomId}"><a th:href="@{/game/room}">房间</a></li>
 </ul>
 <div class="layui-container" style="margin-top:10px;">
     <div class="layui-row">
@@ -61,7 +61,7 @@
                            style="padding: 0 10px;">玩家名字</label>
                     <div class="layui-input-inline">
                        <input id="input-player-name" type="text" name="room-title" maxlength="10"
-                              class="layui-input layui-bg-gray my-input-sm" th:value="${session.playerName}">
+                              class="layui-input layui-bg-gray my-input-sm" th:value="${session.player.name}">
                     </div>
                     <div class="layui-btn layui-btn-primary layui-btn-sm"
                          id="btn-player-name" style="padding: 0 20px;">修改</div>

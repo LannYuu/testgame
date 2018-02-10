@@ -14,7 +14,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
-import java.util.Random;
 
 /**
  * 游戏大厅Controller
@@ -27,26 +26,20 @@ public class GameHallController {
     @Autowired
     HallService hallService;
 
-    private static final String defaultPlayerName ="菜鸡";
     @GetMapping("/hall")
     public ModelAndView hall(HttpServletRequest request) {
-        request.getSession().setAttribute("playerName",getPlayerName(request));
-        return new ModelAndView("game/hall")
-                .addObject("token",getToken(request.getSession()));
+        hallService.getPlayer(request);
+        return new ModelAndView("game/hall");
     }
     @GetMapping("/room")
     public ModelAndView room(HttpServletRequest request) {
         ModelAndView mv = new ModelAndView();
         String token = getToken(request.getSession());
         if(token!=null){
-            String roomId = token.split("/")[0];
-            Room room = hallService.getRoom(roomId);
-            if (room != null) {
-                mv.setViewName("/game/square");
-                return mv;
-            }
+            mv.addObject("token",token).setViewName("game/square");
+            return mv;
         }
-        mv.setViewName("redirect:/error/404");
+        mv.setViewName("redirect:error/404");
         return mv;
     }
 
@@ -56,7 +49,7 @@ public class GameHallController {
         String serverName = request.getServerName();
         int port = request.getServerPort();
         CommonMessage msg = new CommonMessage();
-        msg.setData("ws://"+serverName + ":" + port + path+"/socket/hallchat/"+getPlayerName(request));
+        msg.setData("ws://"+serverName + ":" + port + path+"/socket/hallchat/"+hallService.getPlayer(request).getName());
         return msg;
     }
 
@@ -67,17 +60,18 @@ public class GameHallController {
 
     @PostMapping("/setplayername")
     public @ResponseBody CommonMessage setPlayerName(CommonMessage msg,HttpServletRequest request) {
-        if(request.getSession().getAttribute("gameToken")!=null){
+        User player = hallService.getPlayer(request);
+        if(player.getRoomId()!=null){
             msg.setErrmessage("已在房间中");
-            msg.setData(getPlayerName(request));
+            msg.setData(hallService.getPlayer(request).getName());
             return msg;
         }
         //把playerName 放在了 data 属性中
         String playerName = msg.getData();
         playerName = StringUtils.filterSymbol(StringUtils.filterHTML(StringUtils.filterBlank(playerName)));
         if(!"".equals(playerName))
-            request.getSession().setAttribute("playerName",playerName);
-        msg.setData(getPlayerName(request));
+            player.setName(playerName);
+        msg.setData(player.getName());
         return msg;
     }
 
@@ -88,9 +82,10 @@ public class GameHallController {
             @RequestParam(value = "room-size", required = false,defaultValue = "0") int size,
             @RequestParam(value = "room-password", required = false) String password){
         CommonMessage msg = new CommonMessage();
-        HttpSession httpSession = request.getSession();
-        if(getToken(httpSession)!=null){
+        User player = hallService.getPlayer(request);
+        if(player.getRoomId()!=null){
             msg.setErrmessage("已在房间中");
+            msg.setData(hallService.getPlayer(request).getName());
             return msg;
         }
         title = StringUtils.maxLength(title,100);
@@ -104,10 +99,11 @@ public class GameHallController {
             msg.setErrmessage("游戏大小不合法");
             return msg;
         }
-        String gameToken = hallService.createRoom(title, password,getPlayerName(request), gameSize);
-        httpSession.setAttribute("gameToken",gameToken);
-        msg.setData(gameToken);
-        msg.setMessage("创建成功");
+        hallService.createRoom(title, password,player, gameSize);
+        if(player.getRoomId()!=null){
+            msg.setData(getToken(request.getSession()));
+            msg.setMessage("创建成功");
+        }
         return msg;
     }
 
@@ -119,42 +115,28 @@ public class GameHallController {
         if(getToken(httpSession)!=null){
             msg.setErrmessage("已在房间中");
         }
-        User player = hallService.joinRoom(roomId,getPlayerName(request),null);
-        if(player==null){
+        User player = hallService.getPlayer(request);
+        if(!hallService.joinRoom(roomId,player)){
             msg.setErrmessage("加入房间失败");
             return msg;
         }
-        String gameToken = roomId+"/"+player.getId();
-        httpSession.setAttribute("gameToken",gameToken);
-        msg.setData(gameToken);
+        msg.setData(getToken(request.getSession()));
         msg.setMessage("加入房间成功");
         return msg;
     }
 
 
 
-    private String getPlayerName(HttpServletRequest request){
-        Object playerName = request.getSession().getAttribute("playerName");
-        if(playerName == null || "".equals(playerName)){
-            playerName = defaultPlayerName+new Random().nextInt(10000);
-        }
-        return playerName.toString();
-    }
-    //如果在hallService找不到 token对应的room就删除token返回null
+    //如果在hallService找不到 session中player对应的房间则返回null
     private String getToken(HttpSession httpSession){
-        String userGameToken = (String)httpSession.getAttribute("gameToken");
-        if(userGameToken!=null){
-            String[] s =userGameToken.split("/");
-            String userRoomId = s[0];
-            String userId = s[1];
-            Room room = hallService.getRoom(userRoomId);
-            if(room !=null){
-                if (hallService.getUserFromRoomById(room, userId) != null) {
-                    return userGameToken;
+        User player = (User)httpSession.getAttribute("player");
+        if(player!=null){
+            String roomId = player.getRoomId();
+            if(roomId !=null){
+                if (hallService.getUserFromRoomById(roomId, player.getId()) != null) {
+                    return roomId+"/"+player.getId();
                 }
             }
-            httpSession.setAttribute("gameToken",null);
-
         }
         return null;
     }

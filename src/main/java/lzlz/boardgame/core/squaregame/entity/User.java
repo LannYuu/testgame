@@ -8,6 +8,7 @@ import lzlz.boardgame.core.squaregame.PlayerRole;
 @Data
 @NoArgsConstructor
 public class User {
+    String roomId;
     String id;
     String name;
     PlayerRole playerRole;

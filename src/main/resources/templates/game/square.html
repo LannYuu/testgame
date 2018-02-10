@@ -63,12 +63,19 @@
     <li class="layui-nav-item"><a><img height="40" src="/static/img/favicon.png"/></a></li>
     <li class="layui-nav-item"><a href="/game/hall">大厅</a></li>
     <li class="layui-nav-item layui-this"><a>房间</a></li>
+    <li class="layui-nav-item"><a> </a></li>
     <li class="layui-nav-item" style="float:right">
         <button class="layui-btn layui-btn-warm layui-btn-sm" onclick="sendLeave()">
             <i class="layui-icon">&#x1007;</i>退出房间
         </button>
     </li>
 </ul>
+<div id="notice"
+    style="position:fixed;left:50%;top:0;z-index: 100">
+        <div class="layui-btn-danger" style="width:150px;height:55px;line-height:55px; margin-left:-60px;text-align: center">
+            &nbsp;{{notice()}}&nbsp;
+        </div>
+</div>
 <div class="layui-container" style="margin-top: 10px;">
     <div class="layui-row">
         <div id="board" class="layui-col-xs12 layui-col-sm7 layui-col-md8 layui-col-lg7" >
@@ -87,9 +94,9 @@
                  'board-h-3':size==3&&value>=10&&value<100,
                  'board-h-5':size==5&&value>=10&&value<100,
                  'board-h-7':size==7&&value>=10&&value<100,
-                 'board-v-3':value>=100,
-                 'board-v-3':value>=100,
-                 'board-v-3':value>=100,
+                 'board-v-3':size==3&&value>=100,
+                 'board-v-5':size==5&&value>=100,
+                 'board-v-7':size==7&&value>=100,
                  'edge-blue':value>=10&&value%3==0,'edge-red':value>=10&&value%7==0,
                  'range-blue':value<10&&value>0&&value%3==0,'range-red':value<10&&value>0&&value%7==0}"
                  v-on:click="move(index)"
@@ -136,7 +143,8 @@
                     <button class="layui-btn layui-btn-primary layui-btn-sm"
                             id="btn-send" style="width:25%">发送</button>
                 </div>
-                <button class="layui-btn layui-btn-danger" style="width:100%;position: absolute;left:0;bottom:0;">
+                <button class="layui-btn layui-btn-danger" onclick="sendGiveup()"
+                        style="width:100%;position: absolute;left:0;bottom:0;">
                     认输
                 </button>
             </div>
@@ -165,13 +173,14 @@
 </script>
 <!--/*thymeleaf定义常量*/-->
 <script th:inline="text">
-    const token = '[[${session.gameToken}]]';
+    const token = '[[${token}]]';
     const layout={
         3:["8%","38%"],
         5:["4%","20%"],
         7:["3%","13%"]
     };
     const gameData={
+        active:'',
         role:'',
         size:0,
         blueName:'',
@@ -242,8 +251,6 @@
             if(data.hasOwnProperty(prop)){
                 if(prop==='boardData'){
                     vueBoard.update(data[prop]);
-                    if(data.size)
-                        vueBoard.initCss(data.size);
                 }else if(data[prop])
                     gameData[prop]=data[prop];
             }
@@ -281,7 +288,7 @@
                     break;
                 case 'GiveUp':
                     updateGameData(commandData.data);
-                    alert(commandData.textData+"认输！");
+                    giveup(commandData.textData);
                     break;
                 case 'Leave':
                     leave(commandData.textData);
@@ -312,12 +319,14 @@
         myGameSocket.send(JSON.stringify({command:'GiveUp'}))
     }
     function giveup(role){
-
+        setSpecialInfo(role +"认输！")
     }
     function sendLeave(){
         if(myGameSocket){
-            myGameSocket.send(JSON.stringify({command:'Leave'}));
-            window.location.href='/game/hall';
+            if(gameData.state!=='Start'||(gameData.state==='Start'&&confirm('游戏已开始，要认输吗？'))){
+                myGameSocket.send(JSON.stringify({command:'Leave'}));
+                window.location.href='/game/hall';
+            }
         }else{
             $.post('/game/1/leave/'+token,function(){
                 window.location.href='/game/hall';
@@ -357,6 +366,43 @@
         methods:{
             ready:function(){
                 myGameSocket.send(JSON.stringify({command:'Ready'}))
+            }
+        }
+    });
+    var vueTips = new Vue({
+        el: '#notice',
+        data: gameData,
+        methods:{
+            notice:function(){
+                if(!this.state){
+                    return '未开始';
+                }
+                if(this.state==='Start'){
+                    var notice;
+                    if(this.active===this.role){//如果是你的回合
+                        if(this.preActive===this.active){//你的回合且上一次仍然是你的回合则说明你的分了
+                            notice = '你得分！';
+                        }else{
+                            notice = '你的回合';
+                        }
+                    }else{
+                        if(this.preActive===this.active){//你的回合且上一次仍然是你的回合则说明你的分了
+                            notice = '对方得分！';
+                        }else{
+                            notice = '对方的回合';
+                        }
+                    }
+                    this.preActive = this.active;
+                    return notice;
+                }
+                if(this.state==='Finish'){
+                    if(this.active==='Red'){
+                        return this.redName+' 胜利！';
+                    }
+                    if(this.active==='Blue'){
+                        return this.blueName+' 胜利！';
+                    }
+                }
             }
         }
     });

@@ -1,6 +1,6 @@
 ### 服务器配置
 server:
-    port: 4396
+    port: 80
     tomcat.uri-encoding: UTF-8
 ###  context-path: /vcoinb
 
@@ -28,7 +28,6 @@ spring:
         encoding.force: true
     ##模板引擎
     thymeleaf:
-        cache: false #开发时禁止缓存
         prefix: classpath:/templates/
         suffix: .html
         encoding: UTF-8
@@ -37,12 +36,12 @@ spring:
     ##redis
     redis:
         database: 1
-        host: 111.231.14.53
+        host: localhost
         port: 6379
         password: QWERDF595182653QWERDF595182653
     ##数据库连接
     datasource:
-        url: jdbc:mysql://111.231.14.53:3306/test?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;allowMultiQueries=true
+        url: jdbc:mysql://localhost:3306/test?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;allowMultiQueries=true
         username: vcoin
         password: QWERDF595182653
         driver-class-name: com.mysql.jdbc.Driver

@@ -3,12 +3,10 @@ package lzlz.boardgame.core.squaregame.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lzlz.boardgame.constant.RoomState;
 import lzlz.boardgame.core.squaregame.GameSize;
 import lzlz.boardgame.core.squaregame.SquareGame;
 
 import java.util.Date;
-import java.util.List;
 
 @Data
 @NoArgsConstructor

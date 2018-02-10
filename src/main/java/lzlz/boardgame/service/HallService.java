@@ -7,70 +7,82 @@ import lzlz.boardgame.core.squaregame.entity.Room;
 import lzlz.boardgame.core.squaregame.entity.User;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("HallService")
 public class HallService {
     private static final Map<String,Room> roomMap = new HashMap<>();
+    private static final String defaultPlayerName ="菜鸡";
 
+    public User getPlayer(HttpServletRequest request){
+        User player = (User)request.getSession().getAttribute("player");
+        if(player == null){
+            player = new User();
+            request.getSession().setAttribute("player",player);
+            String playerName = defaultPlayerName+new Random().nextInt(10000);//随机命名
+            player.setName(playerName);
+            String userId = "PLAYER"+UUID.randomUUID().toString().replaceAll("-", "");
+            player.setId(userId);
+
+        }
+        return player;
+    }
     /**
      * 从 httprequest 中创建房间
-     * @return 拼接的两个Id:roomId-userId
      */
-    public String createRoom(String roomName,String roomPassword,String creatorName,GameSize size){
+    public void createRoom(String roomName,String roomPassword,User player,GameSize size){
         String roomId = "ROOM"+UUID.randomUUID().toString().replaceAll("-", "");
         Room room = new Room();
         room.setId(roomId);
         room.setMessage(roomName);
         room.setPassword(roomPassword);
-        room.setCreator(creatorName);
+//        room.setCreator(player.getName());
         room.setCreateTime(new Date());
         room.setSize(size);
         synchronized (roomMap){
             this.addRoom(room);
         }
-        User newUser = joinRoom(roomId,creatorName,null);
-        return roomId+"/"+newUser.getId();
+        if(joinRoom(roomId,player)){
+            player.setRoomId(roomId);
+        }
     }
 
     /**
      * 从 httprequest 中加入房间
      * @param roomId 房间UUID
-     * @param playerName 玩家名
-     * @param userId 如果是新玩家加入输入 null
+     * @param player 玩家
      * @return userId对应的用户 不存userId对应用户且房间已满返回null
      */
-    public User joinRoom(String roomId, String playerName, String userId){
-        if (userId == null || "".equals(userId))
-            userId = "PLAYER"+UUID.randomUUID().toString().replaceAll("-", "");
+    public boolean joinRoom(String roomId, User player){
         Room room = this.getRoom(roomId);
         if(room ==null)
-            return null;
-        User player = getUserFromRoomById(room,userId);
-        if (player == null) {
+            return false;
+        if (getUserFromRoomById(room,player.getId()) == null) {//如果房间中不存在此用户
             synchronized (this){
                 if(room.getBlue()==null){
-                    player = new User();
-                    player.setId(userId);
                     player.setState(PlayerState.Init);
-                    player.setName(playerName);
                     player.setPlayerRole(PlayerRole.Blue);
+                    player.setRoomId(roomId);
                     room.setBlue(player);
                 }else if(room.getRed()==null){
-                    player = new User();
-                    player.setId(userId);
                     player.setState(PlayerState.Init);
-                    player.setName(playerName);
                     player.setPlayerRole(PlayerRole.Red);
+                    player.setRoomId(roomId);
                     room.setRed(player);
                 }
             }
+            return true;
+        }else {
+            return false;
         }
-        return player;
     }
 
     public List<Room> getRoomList(){
-        return new ArrayList<>(roomMap.values());
+        return roomMap.values().stream()
+                .filter(room -> room.getSquareGame()==null)
+                .collect(Collectors.toList());
     }
 
     public Room removeRoom(String roomId){
