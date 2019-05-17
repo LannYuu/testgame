@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan("lzlz.boardgame.dao.mapper")
-public class ApplicationBoot {
+public class Application {
 
 	public static void main(String[] args) {
-        SpringApplication.run(ApplicationBoot.class, args);
+        SpringApplication.run(Application.class, args);
 	}
 
 
